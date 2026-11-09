@@ -67,6 +67,7 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
         <div style="background:rgba(155,58,34,.1);color:#9B3A22;border-radius:14px;padding:11px 15px;font-size:13px">{{ authErrText }}</div>
       </sc-if>
       <button onClick="{{ signIn }}" style="border:none;background:#14372B;color:#FAF7F0;font-size:16px;font-weight:600;padding:17px;border-radius:999px;cursor:pointer;margin-top:2px" style-hover="background:#0F2A20">Sign in</button>
+      <span onClick="{{ openGuide }}" style="align-self:center;font-size:13px;color:#8A6A22;font-weight:600;cursor:pointer;padding:4px">How to use the admin app</span>
     </div>
   </div>
 </sc-if>
@@ -81,9 +82,12 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
       <span style="font-size:9px;letter-spacing:.2em;color:#C9A24A;text-transform:uppercase">Admin</span>
     </div>
   </div>
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-    <span style="font-size:12px;color:#FAF7F0;font-weight:600">{{ ridingToday }} riding today</span>
-    <span style="font-size:11px;color:rgba(250,247,240,.55)">{{ horsesLine }}</span>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+      <span style="font-size:12px;color:#FAF7F0;font-weight:600">{{ ridingToday }} riding today</span>
+      <span style="font-size:11px;color:rgba(250,247,240,.55)">{{ horsesLine }}</span>
+    </div>
+    <button onClick="{{ openGuide }}" title="Staff guide" aria-label="Staff guide" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid rgba(201,162,74,.6);background:transparent;color:#C9A24A;font-family:Marcellus,serif;font-size:17px;line-height:1;cursor:pointer;padding:0">?</button>
   </div>
 </div>
 
@@ -592,6 +596,13 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
 
 <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ false }}">
   <div class="eqs" style="flex:1;overflow-y:auto;padding:18px 20px 20px;display:flex;flex-direction:column;gap:20px">
+    <div onClick="{{ openGuide }}" style="background:#14372B;border-radius:18px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer" style-hover="background:#0F2A20">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <span style="font-size:15px;color:#FAF7F0;font-weight:600">Staff guide</span>
+        <span style="font-size:12px;color:rgba(250,247,240,.7);line-height:1.5">Every screen, the daily routine and the walkthrough video</span>
+      </div>
+      <span style="font-size:16px;color:#C9A24A">›</span>
+    </div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6B63;font-weight:600">Levels</span>
       <div style="display:flex;flex-direction:column;gap:9px">
@@ -950,7 +961,16 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
         <span style="font-family:Marcellus,serif;font-size:18px;color:#FAF7F0">Rider</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:5px">
-        <span style="font-family:Marcellus,serif;font-size:23px;color:#FAF7F0">{{ pName }}</span>
+        <sc-if value="{{ pNameView }}" hint-placeholder-val="{{ true }}">
+          <span onClick="{{ pNameEdit }}" title="Tap to correct the name" style="font-family:Marcellus,serif;font-size:23px;color:#FAF7F0;cursor:text">{{ pName }} <span style="font-family:Figtree,sans-serif;font-size:13px;color:rgba(201,162,74,.75)">✎</span></span>
+        </sc-if>
+        <sc-if value="{{ pNameEditing }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input value="{{ pNameDraft }}" onChange="{{ pNameOnDraft }}" style="flex:1;min-width:0;border:1px solid rgba(201,162,74,.6);background:rgba(250,247,240,.08);color:#FAF7F0;border-radius:10px;padding:8px 10px;font-size:16px">
+            <button onClick="{{ pNameSave }}" style="flex:none;border:none;background:#C9A24A;color:#14372B;font-size:13px;font-weight:700;padding:9px 12px;border-radius:10px;cursor:pointer">Save</button>
+            <button onClick="{{ pNameCancel }}" style="flex:none;border:none;background:transparent;color:rgba(250,247,240,.7);font-size:16px;padding:6px;cursor:pointer">✕</button>
+          </div>
+        </sc-if>
         <span style="font-size:12px;color:rgba(250,247,240,.6)">{{ pMeta }}</span>
         <sc-if value="{{ pHasPromo }}" hint-placeholder-val="{{ false }}">
           <span style="align-self:flex-start;margin-top:3px;font-size:11px;font-weight:600;letter-spacing:.06em;color:#C9A24A;border:1px solid rgba(201,162,74,.45);border-radius:999px;padding:3px 10px">{{ pPromoTag }}</span>
@@ -1072,6 +1092,24 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
             </a>
           </div>
         </div>
+      </div>
+
+      <button onClick="{{ pInvite }}" style="margin-top:-8px;border:none;background:#14372B;color:#FAF7F0;font-size:14px;font-weight:600;padding:13px;border-radius:999px;cursor:pointer" style-hover="background:#0F2A20">Send the app link on WhatsApp</button>
+      <button onClick="{{ pSaveContact }}" style="margin-top:-8px;background:transparent;border:1px solid rgba(20,55,43,.2);color:#14372B;font-size:14px;font-weight:600;padding:13px;border-radius:999px;cursor:pointer" style-hover="background:rgba(20,55,43,.05)">Save to my contacts</button>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6B63;font-weight:600">Paper application form</span>
+        <sc-for list="{{ pForms }}" as="f" hint-placeholder-count="1">
+          <a href="{{ f.url }}" target="_blank" rel="noopener" style="text-decoration:none">
+            <div style="background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:16px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center" style-hover="border-color:#C9A24A">
+              <span style="font-size:14px;color:#14372B;font-weight:500">{{ f.label }}</span>
+              <span style="font-size:13px;color:#8A6A22;font-weight:600">Open ↗</span>
+            </div>
+          </a>
+        </sc-for>
+        <sc-if value="{{ pNoForms }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:12px;color:#5E6B63;line-height:1.5">{{ pNoFormsNote }}</span>
+        </sc-if>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:10px">
@@ -1462,6 +1500,81 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
   </div>
 </sc-if>
 
+<sc-if value="{{ guideOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:#FAF7F0;display:flex;flex-direction:column;z-index:39">
+    <div style="background:#14372B;padding:calc(16px + env(safe-area-inset-top)) 20px 16px;display:flex;flex-direction:column;gap:13px;flex:none">
+      <div style="display:flex;align-items:center;gap:13px">
+        <button onClick="{{ closeGuide }}" style="background:transparent;border:none;color:#C9A24A;font-size:21px;cursor:pointer;padding:0;line-height:1">‹</button>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-family:Marcellus,serif;font-size:18px;color:#FAF7F0">Staff guide</span>
+          <span style="font-size:11px;color:rgba(250,247,240,.6)">Every screen and button of the admin app</span>
+        </div>
+      </div>
+      <input value="{{ guideQuery }}" onChange="{{ onGuideQuery }}" placeholder="Search the guide, e.g. cancel, PIN, payment" style="border:1px solid rgba(250,247,240,.25);background:rgba(250,247,240,.08);border-radius:999px;padding:11px 16px;font-size:14px;color:#FAF7F0">
+    </div>
+    <div class="eqs" ref="{{ guideRef }}" style="flex:1;overflow-y:auto;padding:16px 20px 26px;display:flex;flex-direction:column;gap:9px">
+      <sc-if value="{{ guideNoSearch }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:6px">
+          <div onClick="{{ openGuideVideo }}" style="background:#14372B;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:6px;cursor:pointer" style-hover="background:#0F2A20">
+            <div style="width:52px;height:52px;border-radius:999px;background:#C9A24A;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><svg width="20" height="20" sc-camel-view-box="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="#14372B"></path></svg></div>
+            <span style="font-family:Marcellus,serif;font-size:21px;color:#FAF7F0">Watch the admin walkthrough</span>
+            <span style="font-size:13px;color:rgba(250,247,240,.7);line-height:1.5">A full evening in the admin app, step by step · about 3 minutes</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px">
+            <sc-for list="{{ guideChips }}" as="c" hint-placeholder-count="8">
+              <div onClick="{{ c.go }}" style="padding:8px 13px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;background:rgba(20,55,43,.06);color:#14372B">{{ c.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-for list="{{ guideSections }}" as="g" hint-placeholder-count="4">
+        <div data-guide="{{ g.id }}" style="display:flex;flex-direction:column;gap:9px;padding-top:10px">
+          <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A6A22;font-weight:700">{{ g.title }}</span>
+          <sc-for list="{{ g.items }}" as="q" hint-placeholder-count="3">
+            <div style="background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:18px;padding:15px 17px;display:flex;flex-direction:column;gap:11px">
+              <div onClick="{{ q.toggle }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer">
+                <span style="font-size:14px;color:#14372B;font-weight:600;line-height:1.4">{{ q.q }}</span>
+                <span style="font-size:16px;color:#5E6B63;flex:none">{{ q.sign }}</span>
+              </div>
+              <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <span style="font-size:13px;color:#3E4C44;line-height:1.65;white-space:pre-line">{{ q.a }}</span>
+                  <sc-if value="{{ q.hasImage }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ q.img }}" alt="{{ q.q }}" loading="lazy" style="width:100%;max-width:300px;align-self:center;height:auto;display:block;border-radius:16px;border:1px solid rgba(20,55,43,.14);box-shadow:0 6px 18px rgba(20,55,43,.08)">
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+      <sc-if value="{{ guideNothing }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:40px 20px;text-align:center;font-size:13px;color:#5E6B63;line-height:1.6">Nothing in the guide matches that. Try one word, like booking, card or payment.</div>
+      </sc-if>
+      <div style="padding:14px 4px 0;font-size:12px;color:#5E6B63;line-height:1.6">Still stuck? Take a screenshot and send it to Abdel Rahman with what you tapped.</div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ guideVideoOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:#0B0F0D;z-index:41;display:flex;flex-direction:column">
+    <div style="padding:calc(14px + env(safe-area-inset-top)) 16px 10px;display:flex;justify-content:flex-end">
+      <button onClick="{{ closeGuideVideo }}" style="border:1px solid rgba(250,247,240,.25);background:transparent;color:#FAF7F0;font-size:14px;font-weight:600;padding:10px 18px;border-radius:999px;cursor:pointer" style-hover="border-color:#C9A24A;color:#C9A24A">Close</button>
+    </div>
+    <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 12px calc(16px + env(safe-area-inset-bottom))">
+      <sc-if value="{{ guideVideoPlayable }}" hint-placeholder-val="{{ true }}">
+        <video src="assets/admin-walkthrough.mp4" controls="{{ true }}" preload="none" sc-camel-auto-play="{{ true }}" sc-camel-plays-inline="{{ true }}" onError="{{ guideVideoFailed }}" style="max-width:100%;max-height:100%;border-radius:18px;background:#14372B;display:block"></video>
+      </sc-if>
+      <sc-if value="{{ guideVideoError }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;padding:0 30px">
+          <span style="font-family:Marcellus,serif;font-size:21px;color:#FAF7F0">The video did not load</span>
+          <span style="font-size:13px;color:rgba(250,247,240,.65);line-height:1.6">Check your connection and try again. The written guide works offline.</span>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
 <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
   <div style="position:absolute;left:16px;right:16px;bottom:88px;background:#14372B;color:#FAF7F0;border-radius:16px;padding:14px 17px;font-size:14px;box-shadow:0 10px 30px rgba(20,55,43,.35);display:flex;align-items:center;gap:10px;z-index:40">
     <span style="color:#C9A24A;font-size:15px">✓</span><span>{{ toastText }}</span>
@@ -1493,15 +1606,18 @@ function fromLive(d) {
     const c = x.card, base = lv[x.level] || { card: 12 }, missing = [];
     if (!x.dob) missing.push("Date of birth");
     if (!x.phone) missing.push("Phone");
+    if (!x.phone2) missing.push("Second mobile");
     return { id:x.id, name:x.name, member:x.member || "", level:x.level, dob: day10(x.dob) || "",
       credits: c ? c.left : 0, total: c ? c.total : base.card, trainer: x.trainer || lt[x.level] || "",
       phone: x.phone || "", lessons: x.lessons || 0, lifetime: x.lifetime || 0,
-      lastRide: x.last_ride ? isoOf(new Date(x.last_ride)) : day10(x.since), missing,
+      lastRide: x.last_ride ? isoOf(new Date(x.last_ride)) : null, missing,
       expires: c ? day10(c.expires) : null, cardLog: x.log || [], active: x.status === "active",
       since: day10(x.since), waiverOn: day10(x.waiver), occupation: x.occupation || "",
       link: x.link, claimedLevel: x.claimed_level, asked: x.asked,
       levelOk: x.level_confirmed !== false, monthly: !!x.monthly, aliases: x.aliases || "", base: x.base || "",
-      owed: x.owed || 0, hasLogin: !!x.has_login, reg: x.reg || "", guardian: x.guardian || "" };
+      owed: x.owed || 0, hasLogin: !!x.has_login, reg: x.reg || "", guardian: x.guardian || "",
+      phoneAlt: x.phone2 || "", email: x.email || "", address: x.address || "", gender: x.gender || "",
+      school: x.school || "", riderJob: x.rider_job || "", forms: Array.isArray(x.forms) ? x.forms : [] };
   });
   const riders = all.filter(r => r.link !== "asked");
   const linkReqs = all.filter(r => r.link === "asked").map(r => {
@@ -1550,6 +1666,34 @@ function nmLev(a, b) {
   return prev[n];
 }
 function nmClose(a, b) { const x = nmNorm(a).split(" ")[0], y = nmNorm(b).split(" ")[0]; if (x.length < 3 || !y) return false; return nmLev(x, y) <= (y.length >= 6 ? 2 : 1); }
+// One contact card. The phone number is the family's; the note says who it is.
+function vcardOf(r) {
+  const esc = s => String(s || "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/([,;])/g, "\\$1");
+  const tel = v => { const d = String(v || "").replace(/\D/g, ""); return d.charAt(0) === "0" ? d : "+" + d; };
+  const parts = String(r.name || "").split(" ").filter(Boolean);
+  const first = parts[0] || r.name, last = parts.slice(1).join(" ");
+  const L = ["BEGIN:VCARD", "VERSION:3.0", "N:" + esc(last) + ";" + esc(first) + ";;;", "FN:" + esc(r.name), "ORG:Equicare Gezira"];
+  const occ = r.occupation || OCC[r.member] || "";
+  if (occ) L.push("TITLE:" + esc(occ));
+  if (String(r.phone || "").replace(/\D/g, "")) L.push("TEL;TYPE=CELL,VOICE,pref:" + tel(r.phone));
+  if (String(r.phoneAlt || "").replace(/\D/g, "") && String(r.phoneAlt).replace(/\D/g, "") !== String(r.phone).replace(/\D/g, "")) L.push("TEL;TYPE=CELL,VOICE:" + tel(r.phoneAlt));
+  if (r.email) L.push("EMAIL;TYPE=INTERNET:" + esc(r.email));
+  if (r.address) L.push("ADR;TYPE=HOME:;;" + esc(r.address) + ";;;;");
+  if (r.dob) L.push("BDAY:" + r.dob);
+  const note = ["Equicare Gezira rider",
+    (r.member ? "Member " + r.member + " · " : "") + "Level " + r.level + (r.monthly ? " (monthly)" : "") + (r.active ? "" : " · not riding"),
+    r.guardian ? "Guardian: " + r.guardian : "", r.reg ? "Rider ID " + r.reg : ""].filter(Boolean).join("\n");
+  L.push("NOTE:" + esc(note), "END:VCARD");
+  return L.join("\r\n");
+}
+function saveVcf(text, filename) {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const url = "data:text/vcard;charset=utf-8," + encodeURIComponent(text);
+  if (ios) { window.location.href = url; return; }
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
 function baseOfMember(m) { return String(m || "").replace(/[^\d/]/g, "").split("/")[0].replace(/^0+/, ""); }
 function regMatches(q, riders) {
   const qb = baseOfMember(q.member), qp = String(q.phone || "").replace(/\D/g, "").slice(-8);
@@ -1626,6 +1770,78 @@ function promoRead(key, seed) {
 }
 function promoWrite(key, list) { try { window.localStorage.setItem(key, JSON.stringify(list)); return true; } catch (e) { return false; } }
 function promoWords(p) { return p.reward === "percent" ? p.value + "% off" : "+" + p.value + " free " + (p.value > 1 ? "lessons" : "lesson"); }
+
+// The staff guide. Every answer follows what the buttons in this app really do.
+// Pictures live in assets/help/admin-*.jpg and only load when an answer is opened.
+const GUIDE = [
+  { id:"start", title:"Start here", items:[
+    { q:"Signing in and installing the admin app", a:"• Open equicare-black.vercel.app/admin.html\n• User name: admin\n• PIN: the 4 staff digits\n• Tap Sign in\n\nYou can also open the rider app and tap Staff sign in under the Sign in button.\n\nPut it on the phone's home screen so it opens like an app:\n• iPhone: Safari → Share → Add to Home Screen\n• Android: Chrome → ⋮ → Install app\n\nThe app may ask for the PIN again after it has been fully closed. That is on purpose: anyone holding the phone cannot get in without it.", img:"assets/help/admin-signin.jpg" },
+    { q:"The five tabs at the bottom", a:"• Today: the day's list of jobs, every booking by time, marking who came, booking by phone, closing a day.\n• Riders: search every rider, link new accounts, open a rider's page.\n• Money: payments to confirm, cards added by hand, cards running out.\n• Numbers: riders, money this month, ages, levels, who stopped coming, comments, the monthly record.\n• Setup: levels, prices, horses, trainers, promo codes, rules, the staff PIN, this guide.\n\nThe top bar always shows how many ride today and how many horses are working.", img:"assets/help/admin-today.jpg" },
+    { q:"The daily routine, in order", a:"Before the evening starts:\n1. Today → work through Today's list from the top.\n2. Check payments: confirm any money that arrived.\n3. Riders to link: link new app accounts to their record.\n4. Book everyone who asked by phone, WhatsApp or at the desk (Book a rider on this day).\n5. Send today's list to the trainers.\n\nDuring and after the sessions:\n6. Tap Did not come for anyone who missed their session.\n7. Tap Everyone else came to close the day.\n\nOnce a week: Money → Cards running out → Remind.\nIn the first week of each month: print last month's record and file it with the club.\n\nThe app is the only schedule. Nothing goes on paper or in a separate WhatsApp list: if a booking is not in the app, the rider is not on the trainers' list." },
+    { q:"Nothing is lost: Undo, confirmations and saving", a:"• Every change saves by itself within a second. There is no Save button except for the PIN.\n• Anything that changes money or a card asks first, with a Cancel button.\n• After marking, moving, changing a card or a level, an Undo bar appears on Today. It undoes the last step.\n• If the internet drops you see \"Not saved\" at the bottom. The screen goes back to what is really saved; do the step again when the connection is back." }
+  ]},
+  { id:"today", title:"Today", items:[
+    { q:"Moving between days", a:"• Tap ‹ or › next to the date to go back or forward one day.\n• Tap the date itself to open a month calendar. A gold dot under a day means someone is booked.\n• Tap Back to today under the calendar to come home.\n\nUnder the date you see how many are booked and how many are still to tick." },
+    { q:"Today's list: what each card means", a:"Today's list only shows on today's date. Tap any card and it takes you to the right place.\n\n• Check 2 payments: a rider says they paid. Opens Money.\n• Send today's list to the trainers: opens WhatsApp with the list ready.\n• Wish … a happy birthday: opens WhatsApp with a short message to the parent.\n• … asked for more days: a rider asked for extra days on the card. Opens their page. It clears itself once you change the card's end date.\n• 2 riders to link: new app accounts that say they already ride here. Opens Riders.\n• Mark who came: sessions from earlier today still not ticked. Takes you to them.\n\nWhen the list is empty you see \"Nothing left for today\".", img:"assets/help/admin-today.jpg" },
+    { q:"\"More when you have time\"", a:"Tap Show under Today's list for the slower jobs:\n• Ready for a test: Level 1 riders with 25 lessons, Level 2 riders with 24. The trainer decides.\n• Nearly out of sessions: 2 sessions or fewer on the card.\n• Payments not confirmed: ones you left as Not yet.\n• Have not booked in 21 days: a message might bring them back.\n• Last month's record is ready: shows on the 1st to 7th of the month.\n• Profiles unfinished: date of birth or phone missing.\n\nTap Not now on any of them to hide it for a week." },
+    { q:"Reading a time block", a:"Each time of the day has its own block:\n• The time, and \"2 of 4 horses\": riders booked against horses working.\n• Each rider with their level, and a tag: Booked (gold), Came (green), Missed (red), Cancelled (grey).\n• A free test shows \"Before the test\": what the rider says they can do and where they rode. Read it to the trainer before they start.\n• \"covering for …\" means another trainer is taking that session." },
+    { q:"Marking who came (the quick way)", a:"Only mark the riders who did NOT come:\n1. Tap Did not come on their row. The tag turns red: Missed. The session stays used.\n2. When the evening is over, tap the gold button Everyone else came (5). All the rest turn green.\n\nTicking only opens on the day itself. On a future day you see \"Ticking off opens on the day\".\n\nMarked someone by mistake? Tap Undo in the bar at the top, straight away.", img:"assets/help/admin-marking.jpg" },
+    { q:"Giving a missed session back", a:"For a rider marked Missed who had a good reason (for example they called, or the club was late):\n• Tap Give the session back on their row.\n\nThe booking becomes Cancelled and one session goes back on the card (never above the card's total). Undo works here too." },
+    { q:"Changing the trainer for one session or the whole day", a:"• On a rider's row, pick another trainer from the small list on the right.\n• If that trainer had more sessions today, the app asks: Move all … to the new trainer, or Just this session.\n\nUse it when a trainer is off for the day. The rider's usual trainer stays the same." },
+    { q:"Cancelling one booking from Today", a:"• Tap Cancel this booking under the rider (only on Booked rows).\n• Confirm with Cancel the session.\n\nThe session always goes back to the rider, on the card, or off what they owe. The 24-hour rule is for riders cancelling in their app, not for staff." },
+    { q:"Sending today's list to the trainers", a:"1. Tap Send today's list to the trainers (in Today's list, or the outlined button under the sessions).\n2. WhatsApp opens with the list already written.\n3. Pick the trainers' group or chat, then Send.\n\nThe list is grouped Level 1 and Level 2/3, with the time, the name and the age, and \"(test)\" for free tests. Cancelled bookings are left out.\n\nIf something changes later, the button reads Send the list again." },
+    { q:"Blocking a time", a:"Use it when a time cannot be booked: horse care, a club event, a trainer late.\n1. Today → go to the day → Block a time.\n2. Tap Block next to each time. Tap Open it to free it again.\n3. Tap Done.\n\nTimes that already have a rider booked cannot be blocked: move or cancel the rider first. Blocked times are listed under the sessions of that day." },
+    { q:"An empty gap on a future day", a:"On a coming day with 1½ hours or more empty between sessions, a gold note appears.\n• Level 1 (one rider): it suggests moving the later rider up. Ask on WhatsApp sends them a ready message; Move it moves the booking once they agree.\n• Levels 2 and 3 ride as a group, so the note only tells you about the gap.\n• Leave it as it is hides the note." },
+    { q:"Closing a whole day (weather, horses, club closed)", a:"1. Today → go to the day → Close this day (red, under the sessions).\n2. Pick the reason: Weather, Horse resting, Club closed, National holiday, or Other (type the words riders will see).\n3. Read \"What happens\", then tap Close the day.\n\nEvery rider still booked gets 1 session back AND their card end date moves 1 day later, so nobody loses time. Riders already marked stay as they are.\n\nThen tap Message the … affected riders: WhatsApp opens with the closing message and the names.\n\nOpened by mistake? Tap Open the day again.", img:"assets/help/admin-closeday.jpg" }
+  ]},
+  { id:"book", title:"Booking for a rider", items:[
+    { q:"Booking a request from phone, WhatsApp or the desk", a:"From Today:\n1. Go to the day → Book a rider on this day.\n2. Type 2–3 letters of the name, or the membership number or phone.\n3. Tap the rider.\n\nOr from Riders: open the rider → Book a session.\n\nThen:\n4. Pick the day at the top (only the days their level rides).\n5. Each time shows \"1 of 4 taken · tap to book\". Tap a time.\n6. Check the line (\"One session comes off the card, 7 left\") and tap Book it.\n\nRiders who stopped coming are in the search too; booking them marks them as riding again.", img:"assets/help/admin-book.jpg" },
+    { q:"Sending the confirmation", a:"After Book it you see Booked with the day and time. Then:\n• Send the confirmation on WhatsApp: opens a chat with the parent, with the booking and the app link (\"Next time you can book it yourself in 20 seconds\"). Tap Send.\n• Book another time for …: same rider, another time.\n• Book someone else: back to the search.\n• Done: close.\n\nAlways send the confirmation. It is how families learn to use the app.", img:"assets/help/admin-booked.jpg" },
+    { q:"Staff booking rules (different from the rider app)", a:"• No 14-day limit and no 10 AM same-day cut-off.\n• No sessions left? The booking still goes through. The session is \"owed\" and comes off the next card by itself. The rider's page shows \"1 owed\".\n• Time full? You see \"That time is full\". Book anyway adds them over the limit, but never more riders than horses working.\n• \"No horse free\", \"Blocked\" or \"Already booked\" times cannot be tapped.\n• Monthly riders (Level 4): nothing comes off a card. They are always booked by staff.\n• Level not confirmed: a note asks you to check the level with the trainer first." },
+    { q:"Moving a booking to another time", a:"There is no move button for staff. Do it in two steps:\n1. Book the new time (it shows the session coming off the card).\n2. Cancel the old booking (the session goes back).\n\nSend the new confirmation on WhatsApp." }
+  ]},
+  { id:"riders", title:"Riders", items:[
+    { q:"Finding a rider", a:"Riders → type in the search box:\n• any part of the name, in English (nicknames saved on the register work too)\n• the membership number\n• 3 or more digits of the phone\n\nThe chips at the top show counts: Riding now (the default list) · Everyone (every rider on the register) · Not riding · Level 1, 2, 3 · Ready for a test · Unfinished. Typing always searches everyone.\n\nEach row shows the number, the level and the sessions left, plus tags: \"not confirmed\", \"monthly\", \"not riding\". A gold dot means the profile is unfinished or they are ready for a test.", img:"assets/help/admin-riders.jpg" },
+    { q:"Riders to link (\"I already ride at Equicare\")", a:"When a parent creates an account and says they already ride here, the account waits at the top of Riders under \"… riders to link\".\n\nFor each one the app shows up to 3 Best matches on the register, with the reason in green: same family number · same first name · same birth date · same phone.\n\n• Link: joins the new account to that record. The level, card and lessons carry over.\n• Add at Level …: no record matches. Adds them as a new rider; then add their card in Money.\n• Not one of ours · free test: they are new to Equicare; they book the free test.\n\nBefore tapping Link, check the birth date. Brothers and sisters share the family number, so the number alone is not enough.", img:"assets/help/admin-link.jpg" },
+    { q:"The rider's page, top to bottom", a:"Tap any rider to open their page:\n• Book a session, and their next bookings, each with Cancel.\n• Profile not finished: what is still missing from the paper form.\n• Level: the three level buttons.\n• Sessions left: the number on the card, with − and +.\n• Card: end date, extra days, replace the card, and every change made.\n• Trainer: their usual trainer.\n• Contact: the parent's phone with Call and WhatsApp buttons, then Send the app link on WhatsApp and Save to my contacts.\n• Paper application form: Open ↗ shows the scanned form.\n• Details: birth date, second mobile, guardian, email, address, rider ID, lessons, last ride, since when, waiver.\n• Set as not riding / Set as riding again.\n\nTap ‹ at the top to go back.", img:"assets/help/admin-rider.jpg" },
+    { q:"Correcting a rider's name", a:"Tap the name at the top of the rider's page (it has a small ✎).\n• A box opens with the name.\n• Correct it and tap Save. ✕ leaves it as it was.\n\nFirst and last name at least. The rider still signs in with the first name, so a spelling fix never locks them out." },
+    { q:"Sending a family their app link", a:"Rider's page → Send the app link on WhatsApp.\n• WhatsApp opens on the family's number with the message ready, in English and a short Arabic line.\n• It has their personal link: it fills in the rider's name and membership number, so the parent only taps Sign in.\n• It also has how to add the app to the home screen and the 1-minute video.\n\nOne message per family is enough: once a parent signs in, brothers and sisters on the same family number and phone appear on their phone too.\n\nThe link only fills in the form. It never signs anyone in by itself, so a forwarded link cannot open someone's account." },
+    { q:"Saving a rider to my phone's contacts", a:"Rider's page → Save to my contacts.\n• The contact card opens with the rider's name, Equicare Gezira, both mobiles, email, address and birthday.\n• The notes start with \"Equicare Gezira rider\", then the membership number, level, guardian and rider ID.\n• iPhone: tap Create New Contact. If nothing opens from the home-screen icon, open the admin page in Safari.\n\nSetup → Contacts downloads every rider with a phone in one file." },
+    { q:"Opening the paper application form", a:"Rider's page → Paper application form → Open ↗.\n• The scan opens in Google Drive.\n• Riders with two forms have both, first and later.\n• The phone must be signed in to a Google account that can see the Application Form Documents folder.\n\nRiders who joined in the app say \"Signed up in the app · no paper form\"." },
+    { q:"Details families add themselves", a:"When a family opens the app and the file is missing their mobile, second mobile, birth date, membership number or a parent's name, the app asks them once. They can tap Later; a small card on their home screen stays until it is done.\n\nOnly a missing mobile stops them: they add it before their first booking.\n\nEvery change shows on the rider's page under Changes, for example \"Family added mobile in the app\". The app never overwrites a birth date or number already on file: only staff change those." },
+    { q:"Moving a rider up a level (or confirming a level)", a:"• On the rider's page tap the new level, then Yes, move up.\n• The lesson counter for the level starts again at 0. The lifetime total is kept.\n• The rider sees the new level, with confetti, next time they open the app.\n\nA red line \"Level not confirmed\" means the paper form did not say. Ask the trainer, then tap the right level: it is confirmed straight away, no question.\n\nMoving down is rare: check with the trainer first." },
+    { q:"Putting in a paper card (riders riding before the app)", a:"For a rider still on a paper card:\n1. Riders → open the rider.\n2. Sessions left: tap + until it shows the number on the paper card.\n3. Card: pick the end date in the date box, then Set date.\n\nThe rider's app then shows the card and booking opens. Several taps on + or − count as one change, and one Undo puts it back." },
+    { q:"Extra days on a card", a:"Riders can ask for more days in their app (it appears in Today's list), or ask you directly.\n1. Open the rider → Card.\n2. Pick the reason: Travel, Illness or injury, Other (type it).\n3. Tap +7 days, +14 days or +30 days, or pick an exact date and Set date.\n\nEvery change is written under Changes on the card and in the monthly record.\n\nThe terms say extra days are only for exceptional cases. Follow Equicare's decision on this." },
+    { q:"Replacing a card", a:"Use it when a card ended too early for a fair reason and the rider still has sessions.\n• Card → Replace the card → Replace it.\n\nThe sessions left carry over and a fresh 30 days start from today. It is not a new sale: for a new paid card use Money." },
+    { q:"Stopped riding, or riding again", a:"• At the bottom of the rider's page: Set as not riding. They leave the Everyone list and the counts, but stay searchable.\n• Set as riding again brings them back. Booking them also brings them back.\n\nThe app never does this by itself: a quiet month can be a holiday." }
+  ]},
+  { id:"money", title:"Money", items:[
+    { q:"Confirming a payment", a:"Payments wait under Money → Waiting to be checked. Each shows the rider, the card, the amount and how they paid:\n• \"InstaPay receipt sent on WhatsApp\": open WhatsApp and check the receipt arrived in Equicare's account.\n• \"Cash at the desk — asked in the app\": take the cash first.\n\nThen:\n• Money received: the card is added straight away (sessions + 30 days from today) and recorded as a sale.\n• Not yet: nothing is added. It moves to Not confirmed below, where you can still tap Received later, or Remove.\n\nIf the rider has a promo code waiting (for example GEZIRA26) it shows on the line and is added automatically.", img:"assets/help/admin-money.jpg" },
+    { q:"How riders pay right now", a:"Until InstaPay and online payment are ready, Buy your card and Renew show Equicare's bank account:\n• Bank: Crédit Agricole Egypt\n• Account number: 00061100005993 (with a Copy button)\n• Name: Khaled Assem\n\nIn InstaPay they choose Send money → Bank account → Crédit Agricole and paste the number, or transfer from their bank app. Then they tap Send the receipt on WhatsApp, and the payment appears here under Waiting to be checked.\n\nCash at the desk is still on the same screen." },
+    { q:"\"Another payment for …?\" warning", a:"It appears when the same rider already has a payment on record. Often the same receipt was sent twice.\n• Check the two receipts (amount, time, reference).\n• Only if it is really a second payment, tap It is a real second payment. Otherwise Cancel, then Not yet → Remove." },
+    { q:"\"LEVEL NOT CONFIRMED\" on a payment", a:"The card price depends on the level. Open the rider (Riders), confirm the level with the trainer, then come back to Money and tap Money received." },
+    { q:"Adding a card by hand (cash at the desk)", a:"For a payment that did not come through the app:\n1. Money → Add a card by hand.\n2. Rider: pick the name.\n3. Card: Level 1 (5 sessions, 1,750 EGP), Level 2 (12 sessions, 4,620 EGP) or Level 3 (12 sessions, 5,700 EGP).\n4. Add the sessions, read the message, Add the sessions again.\n\nA new card replaces the old one: sessions left on the old card do not carry over. The message tells you how many would be lost.\n\nWrong rider? Tap Undo on the green \"Just added\" line straight away. Monthly riders (Level 4) pay by hand and are not on this list." },
+    { q:"Cards running out", a:"Money → Cards running out lists riders with 2 sessions or fewer.\n• Remind ↗ opens WhatsApp with the parent." }
+  ]},
+  { id:"numbers", title:"Numbers", items:[
+    { q:"What the Numbers tab shows", a:"• Riding now: riders on the books, and the change since last month.\n• This month: EGP from cards sold this month, and how many cards.\n• Riders month by month: tap a bar to see that month by level. Only the current month is counted live from the app; the earlier bars are sample figures until the app has a few months of its own.\n• Ages and Levels: who rides.\n• Stopped coming: no booking for 21 days. Check in ↗ opens WhatsApp; Not riding takes them off the list.\n• What riders are saying: comments sent from the rider app's Profile. Clear all comments empties the list.", img:"assets/help/admin-numbers.jpg" },
+    { q:"The monthly record for the club", a:"1. Numbers → tap the month's bar → Record for signing ↗ (or the reminder in Today's list on the 1st–7th).\n2. It lists: 1. every card sold with the price and the total, 2. every card change (extra days, replaced cards, closed days), 3. new riders.\n3. Tap Print. On a phone choose Save as PDF, or print from a computer.\n4. Sign \"Prepared by\", get \"Approved by\" signed, file it.\n\nEverything comes from the app's own log, so it matches what really happened." }
+  ]},
+  { id:"setup", title:"Setup", items:[
+    { q:"Changing the staff PIN", a:"Do this the first time you sign in, and whenever someone leaves.\n1. Setup → Staff PIN → Change.\n2. Type 4 new digits → Save.\n3. Sign out and sign in once with the new PIN to check it.\n\nIt changes for every phone at once. Never send the PIN on a group chat.", img:"assets/help/admin-setup.jpg" },
+    { q:"Levels: days, hours, sessions and prices", a:"Setup → Levels:\n• Tap the days to switch them on (green) or off.\n• Starts / Ends: the first and last time riders can book.\n• Sessions and Price EGP: the card for that level.\n• \"Levels 2 and 3 ride together in one session\": when on, Level 3 follows Level 2's days and hours.\n\nThese are the same numbers the rider app uses, and new times are built from them. Change them only when Equicare has decided, and check the bookings already made on any day you switch off." },
+    { q:"Horses and trainers", a:"• Horses → Show → − / +: how many horses work. A time can never hold more riders than horses.\n• Trainers → Show: add a name and tap Add.\n• Remove a trainer: pick Who takes over. Their riders, their levels and today's sessions all move to that person. The last trainer cannot be removed." },
+    { q:"Promo codes", a:"Setup → Promo codes → Show:\n• The switch turns a code on or off. Off = it stops working in the app at once.\n• Tap the code to see who used it. \"waiting for card\" means it will be added to their next card; Take off removes it.\n• + New code: type the code (4–16 letters or numbers), choose Free lesson or % off, the amount, Level 1 or Any level, and Max uses (empty = no limit). Then Create.\n• Delete code: brochures with it stop working. Switching it off is usually enough.\n\nGEZIRA26 gives 1 free lesson on a first Level 1 card (6 lessons for the price of 5)." },
+    { q:"Booking rules", a:"Setup → Booking rules → Show:\n• Book ahead (days): how far ahead riders can book (14).\n• Cancel window (h): cancelling later than this counts the session (24).\n• Minimum age (7).\n• Card valid (days): from the first session (30).\n\nRiders see the change straight away. Same-day bookings in the rider app close at 10 AM." },
+    { q:"Equicare details, language and contacts", a:"• Equicare details: the InstaPay address (adds an Open InstaPay button for riders) and Equicare's WhatsApp number (every WhatsApp and call button in the rider app uses it).\n• Language · اللغة: English or العربية for this phone.\n• Contacts → Download every rider's contact: a file the phone can import into Contacts, each marked \"Equicare Gezira rider\".\n• Old paper forms: not needed. The full register was imported on 10 Nov; ask Abdel Rahman for any bulk change.\n• Sign out: at the bottom of Setup." }
+  ]},
+  { id:"help", title:"Problems and answers", items:[
+    { q:"A rider cannot sign in", a:"1. Riders → search them. Check the membership number and the date of birth on their page.\n2. Tell them: their name as on the application, plus the membership number (the part after the slash can be left out).\n3. If the name still does not match, the app asks for the date of birth instead.\n4. They can also tap Trouble signing in? and see the name on file.\n\nNot on the register at all? They create an account; it then appears under Riders to link." },
+    { q:"A rider says their card or sessions are wrong", a:"• Open the rider. Sessions left and the card end date are what their app shows.\n• Fix with + / − and Set date. The change is logged under Card → Changes.\n• If a payment is missing, check Money → Not confirmed." },
+    { q:"I tapped the wrong thing", a:"• Marking, moving, card or level change: tap Undo in the bar on Today straight away.\n• Card added by hand: Undo on \"Just added\" in Money.\n• Booking: Cancel it (the session goes back) and book again.\n• Closed a day: Open the day again (sessions given back stay on the cards; adjust by hand if needed)." },
+    { q:"\"Not saved\" or the screen looks old", a:"• \"Not saved\": the internet dropped. The app reloads what is really saved; do the step again.\n• The app refreshes by itself every minute and when you come back to it.\n• After an update: close the app fully and open it again. On a computer press Ctrl+Shift+R.\n• Still wrong: take a screenshot and send it to Abdel Rahman with what you tapped." }
+  ]}
+];
 
 class Component extends DCLogic {
   constructor(props) {
@@ -2316,7 +2532,7 @@ class Component extends DCLogic {
     const autoMark = this.props.autoMarkAttended ?? true;
     const expiringSoon = st.riders.filter(r => r.active && r.credits > 0 && r.credits <= lowAt);
     const dueTest = st.riders.filter(r => r.active && ((r.level === 1 && r.lessons >= 25) || (r.level === 2 && r.lessons >= 24)));
-    const lapsed = st.riders.filter(r => r.active && (NOW - new Date(r.lastRide)) / 86400000 >= lapseAt);
+    const lapsed = st.riders.filter(r => r.active && r.lastRide && (NOW - new Date(r.lastRide)) / 86400000 >= lapseAt);
     const incomplete = st.riders.filter(r => r.missing.length);
     const cashPending = st.cashReqs.map(c => {
       const r = st.riders.find(x => x.member === c.member);
@@ -2439,10 +2655,13 @@ class Component extends DCLogic {
     this._waLink = "https://api.whatsapp.com/send?text=" + waText;
 
     const filters = [
-      { k:"all", label:"Everyone" }, { k:"1", label:"Level 1" }, { k:"2", label:"Level 2" }, { k:"3", label:"Level 3" },
-      { k:"test", label:"Ready for a test" }, { k:"incomplete", label:"Unfinished" }, { k:"off", label:"Not riding" }
+      { k:"all", label:"Riding now", n: st.riders.filter(r => r.active).length },
+      { k:"every", label:"Everyone", n: st.riders.length },
+      { k:"off", label:"Not riding", n: st.riders.filter(r => !r.active).length },
+      { k:"1", label:"Level 1" }, { k:"2", label:"Level 2" }, { k:"3", label:"Level 3" },
+      { k:"test", label:"Ready for a test" }, { k:"incomplete", label:"Unfinished" }
     ].map(f => ({
-      label: f.label, pick: () => S({ filter: f.k }),
+      label: f.label + (f.n !== undefined ? " · " + f.n : ""), pick: () => S({ filter: f.k }),
       bg: st.filter === f.k ? "#14372B" : "rgba(20,55,43,.06)",
       fg: st.filter === f.k ? "#FAF7F0" : "#5E6B63",
       weight: st.filter === f.k ? "600" : "400"
@@ -2451,7 +2670,7 @@ class Component extends DCLogic {
     const q = st.query.trim().toLowerCase();
       let rows = st.riders.filter(r => !q || r.name.toLowerCase().indexOf(q) !== -1 || r.member.indexOf(q) !== -1 || String(r.aliases || "").toLowerCase().indexOf(q) !== -1
         || (q.replace(/\D/g, "").length >= 3 && r.phone.indexOf(q.replace(/\D/g, "")) !== -1));
-    if (st.filter === "1" || st.filter === "2" || st.filter === "3") rows = rows.filter(r => String(r.level) === st.filter);
+    if (st.filter === "1" || st.filter === "2" || st.filter === "3") rows = rows.filter(r => String(r.level) === st.filter && (r.active || q));
     if (st.filter === "test") rows = rows.filter(r => dueTest.indexOf(r) !== -1);
     if (st.filter === "incomplete") rows = rows.filter(r => r.missing.length);
     if (st.filter === "off") rows = rows.filter(r => !r.active);
@@ -2468,9 +2687,11 @@ class Component extends DCLogic {
     // The month-by-month chart ends on the real active count so the tile and
     // the chart tell the same story. Earlier months are the demo's history.
     const activeNow = st.riders.filter(r => r.active).length;
+    // Labels follow today's date, so the live bar is always this month.
+    const monLabel = i => { const d = new Date(NOW.getFullYear(), NOW.getMonth() - (MONTH_HISTORY.length - 1 - i), 1); return MONS[d.getMonth()] + " " + String(d.getFullYear()).slice(2); };
     const history = MONTH_HISTORY.map((m, i) => i === MONTH_HISTORY.length - 1
-      ? { label: m[0], l: levelCounts.slice(), total: activeNow }
-      : { label: m[0], l: [m[1], m[2], m[3]], total: m[1] + m[2] + m[3] });
+      ? { label: monLabel(i), l: levelCounts.slice(), total: activeNow }
+      : { label: monLabel(i), l: [m[1], m[2], m[3]], total: m[1] + m[2] + m[3] });
     const growthMax = Math.max.apply(null, history.map(h => h.total).concat([1]));
     const monthIdx = st.monthPick === null ? null : Math.min(st.monthPick, history.length - 1);
     const offAffected = todays.filter(b => b.status === "cancelled");
@@ -2828,7 +3049,7 @@ class Component extends DCLogic {
       })),
 
       sheetRider: !!p,
-      closeRider: () => S({ openRider:null }),
+      closeRider: () => S({ openRider:null, nameDraft:null }),
       pName: p ? p.name : "",
       pMeta: p ? (p.member || "no number") + (p.dob ? " · age " + ageOf(p.dob) : "") + " · " + p.lessons + " lessons done"
         + (p.monthly ? " · monthly (Level 4)" : "") + (p.owed ? " · " + p.owed + " owed" : "") + (p.active ? "" : " · not riding") : "",
@@ -2884,8 +3105,43 @@ class Component extends DCLogic {
       pTrainer: p ? p.trainer : "",
       onPTrainer: e => { const v = e.target.value; if (p) this.patch(p.id, () => ({ trainer: v })); },
       trainerOptions: st.trainers,
+      pNameView: st.nameDraft === null || st.nameDraft === undefined, pNameEditing: st.nameDraft !== null && st.nameDraft !== undefined,
+      pNameDraft: st.nameDraft || "",
+      pNameEdit: () => { if (p) S({ nameDraft: p.name }); },
+      pNameOnDraft: e => { const v = e.target.value; this.setState({ nameDraft: v }); },
+      pNameCancel: () => S({ nameDraft: null }),
+      pNameSave: () => {
+        const v = String(st.nameDraft || "").replace(/\s+/g, " ").trim();
+        if (!p) return;
+        if (v.split(" ").length < 2) return this.flash("Write at least a first and a last name");
+        if (v !== p.name) { this.patch(p.id, () => ({ name: v })); this.flash("Name saved"); }
+        S({ nameDraft: null });
+      },
+      pInvite: () => {
+        if (!p) return;
+        const first = p.name.split(" ")[0];
+        const link = APP_LINK + "/?" + (p.member ? "m=" + encodeURIComponent(p.member) + "&" : "") + "n=" + encodeURIComponent(p.name);
+        const msg = "Hello from Equicare Gezira 🐴\n\nYou can now book " + first + "'s sessions in our new app, in 20 seconds.\n"
+          + first + " already has an account: no need to sign up.\n\n"
+          + "1. Open this link (it fills in " + first + "'s name and membership number):\n" + link + "\n"
+          + "2. Tap Sign in.\n3. Add it to your home screen: iPhone → Share → Add to Home Screen. Android → ⋮ → Install app.\n\n"
+          + "1-minute video: " + APP_LINK + "/assets/walkthrough.mp4\n\n"
+          + "أهلاً من إكويكير الجزيرة 🐴 تقدروا تحجزوا حصص " + first + " من التطبيق الجديد. الحساب جاهز: افتحوا اللينك واضغطوا Sign in.";
+        const ph = String(p.phone || "").replace(/\D/g, "");
+        window.open(ph ? "https://api.whatsapp.com/send/?phone=" + ph + "&text=" + encodeURIComponent(msg) + "&type=phone_number&app_absent=0"
+                       : "https://api.whatsapp.com/send?text=" + encodeURIComponent(msg), "_blank");
+      },
+      pSaveContact: () => { if (!p) return; saveVcf(vcardOf(p), p.name.replace(/[^\w\u0600-\u06ff ]+/g, "").trim() + ".vcf"); this.flash("Contact card opened · tap Create New Contact"); },
+      pForms: p ? (p.forms || []).map((f, i) => ({ url: f.url, label: "Form " + f.no + (p.forms.length > 1 ? (i === 0 ? " · first" : " · later") : "") })) : [],
+      pNoForms: !!p && !(p.forms || []).length,
+      pNoFormsNote: p && p.reg && p.reg.indexOf("EQ-NF") === 0 ? "No paper form was found for this rider." : "Signed up in the app · no paper form.",
       pDetails: p ? [
         { k:"Date of birth", v:(() => { if (!p.dob) return "Not on file"; const d = new Date(p.dob); return d.getDate() + " " + MONS[d.getMonth()] + " " + d.getFullYear(); })(), color:"#14372B" },
+        { k:"Second mobile", v:p.phoneAlt ? "+" + String(p.phoneAlt).replace(/\D/g, "") : "Missing", color:p.phoneAlt ? "#14372B" : "#9B3A22" },
+        { k:"Guardian", v:p.guardian || "—", color:"#14372B" },
+        { k:"Email", v:p.email || "—", color:"#14372B" },
+        { k:"Address", v:p.address || "—", color:"#14372B" },
+        { k:"Rider ID", v:p.reg || "—", color:"#14372B" },
         { k:"Lessons at this level", v:String(p.lessons), color:"#14372B" },
         { k:"Lessons in total", v:String(p.lifetime || p.lessons), color:"#14372B" },
         { k:"Last ride", v:(() => { if (!p.lastRide) return "—"; const d = new Date(p.lastRide); return d.getDate() + " " + MONS[d.getMonth()]; })(), color:"#14372B" },
@@ -2895,10 +3151,10 @@ class Component extends DCLogic {
       ] : [],
       pWa: p ? "https://api.whatsapp.com/send/?phone=" + p.phone + "&text&type=phone_number&app_absent=0" : WA,
       pTel: p ? "tel:+" + p.phone : "tel:+201066407979",
-      pPhonePretty: p ? "+" + p.phone : "",
+      pPhonePretty: p ? (String(p.phone || "").replace(/\D/g, "") ? "+" + p.phone : "No mobile on file") : "",
       pPhoneWho: p ? "Guardian's mobile · WhatsApp" : "",
       validityDays: st.rules.validity,
-      pExpiryLabel: p ? (p.expires ? "Expires " + prettyIso(p.expires) : "No card yet") : "",
+      pExpiryLabel: p ? (p.expires ? "Expires " + prettyIso(p.expires) : (p.credits > 0 ? "No end date yet · 30 days start at the next booking" : "No card yet")) : "",
       pExpiryState: (() => {
         if (!p || !p.expires) return "";
         const d = daysLeftIso(p.expires);
@@ -3227,7 +3483,7 @@ class Component extends DCLogic {
         S({ adminPin: v, pinNew: "", pinOpen: false });
         this.flash("PIN changed · use it next time you sign in");
       },
-      contactsNote: st.riders.length + " contacts · each noted “Equicare Gezira rider”",
+      contactsNote: st.riders.filter(r => String(r.phone || "").replace(/\D/g, "")).length + " contacts with a phone · each noted “Equicare Gezira rider”",
       contactsOpen: st.contactsOpen,
       contactsToggle: st.contactsOpen ? "Hide" : "Show",
       toggleContacts: () => S({ contactsOpen: !st.contactsOpen }),
@@ -3250,29 +3506,15 @@ class Component extends DCLogic {
       },
       coachAskOne: () => { S({ coachAsk:null }); this.flash("Only this session changed"); },
       downloadContacts: () => {
-        const lines = [];
-        st.riders.forEach(r => {
-          const parts = r.name.split(" ").filter(Boolean);
-          const last = parts.length > 1 ? parts[parts.length-1] : "";
-          const first = parts[0] || r.name;
-          const occ = r.occupation || OCC[r.member] || "";
-          lines.push("BEGIN:VCARD", "VERSION:3.0",
-            "N:" + last + ";" + first + ";;;",
-            "FN:" + r.name,
-            "TEL;TYPE=CELL:+" + r.phone,
-            "ORG:Equicare Gezira");
-          if (occ) lines.push("TITLE:" + occ);
-          lines.push("NOTE:Equicare Gezira rider · " + r.member + " · Level " + r.level + (r.active ? "" : " · not riding"),
-            "END:VCARD");
-        });
+        const list = st.riders.filter(r => String(r.phone || "").replace(/\D/g, ""));
         try {
-          const blob = new Blob([lines.join("\r\n")], { type:"text/vcard;charset=utf-8" });
+          const blob = new Blob([list.map(vcardOf).join("\r\n")], { type:"text/vcard;charset=utf-8" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url; a.download = "equicare-contacts.vcf";
           document.body.appendChild(a); a.click(); document.body.removeChild(a);
           setTimeout(() => URL.revokeObjectURL(url), 4000);
-          this.flash(st.riders.length + " contacts downloaded");
+          this.flash(list.length + " contacts downloaded");
         } catch (e) { this.flash("Could not build the file on this device"); }
       },
       horsesUp: () => { this.setState(s => ({ horses: Math.min(12, s.horses + 1) })); this.flash("Horses updated"); },
@@ -3568,6 +3810,35 @@ class Component extends DCLogic {
       })),
       commitImport: () => { S({ showImport:false, importLoaded:false }); this.flash("Riders added to the database"); },
 
+
+      guideOpen: !!st.guide,
+      openGuide: () => S({ guide:true, guideQuery:"", guideOpenId:null }),
+      closeGuide: () => S({ guide:false }),
+      guideRef: this._gref || (this._gref = React.createRef()),
+      guideQuery: st.guideQuery || "",
+      onGuideQuery: e => { const v = e.target.value; this.setState({ guideQuery: v }); },
+      ...(() => {
+        const q = String(st.guideQuery || "").trim().toLowerCase();
+        const words = q.split(/\s+/).filter(Boolean);
+        const hit = it => !words.length || words.every(w => (it.q + " " + it.a).toLowerCase().indexOf(w) !== -1);
+        const sections = GUIDE.map(g => ({ id: g.id, title: g.title,
+          items: g.items.map((it, i) => ({ it, key: g.id + "-" + i })).filter(x => hit(x.it)).map(x => {
+            const open = st.guideOpenId === x.key || (words.length > 0 && st.guideOpenId !== "none:" + x.key);
+            return { q: x.it.q, a: x.it.a, img: x.it.img || "", hasImage: !!x.it.img, open, sign: open ? "–" : "+",
+              toggle: () => S({ guideOpenId: open ? (words.length ? "none:" + x.key : null) : x.key }) };
+          }) })).filter(g => g.items.length);
+        return {
+          guideSections: sections, guideNothing: sections.length === 0, guideNoSearch: !words.length,
+          guideChips: GUIDE.map(g => ({ label: g.title, go: () => {
+            const box = this._gref && this._gref.current, el = box && box.querySelector('[data-guide="' + g.id + '"]');
+            if (box && el) box.scrollTo({ top: el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 8, behavior: "smooth" });
+          } }))
+        };
+      })(),
+      guideVideoOpen: !!st.guideVideo, guideVideoPlayable: !!st.guideVideo && !st.guideVideoErr, guideVideoError: !!st.guideVideo && !!st.guideVideoErr,
+      openGuideVideo: () => S({ guideVideo:true, guideVideoErr:false }),
+      closeGuideVideo: () => S({ guideVideo:false, guideVideoErr:false }),
+      guideVideoFailed: () => S({ guideVideoErr:true }),
       toast: !!st.toast, toastText: st.toast
     };
   }

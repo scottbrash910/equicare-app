@@ -43,6 +43,9 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
     <div class="eqscroll" style="flex:1;min-height:0;overflow-y:auto;background:#FAF7F0;border-radius:32px 32px 0 0;padding:30px 26px;display:flex;flex-direction:column;gap:18px">
       <div style="display:flex;flex-direction:column;gap:5px">
         <div style="font-family:Marcellus,serif;font-size:25px;color:#14372B">Welcome back</div>
+        <sc-if value="{{ invited }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:13px;color:#3E4C44;line-height:1.55">Your account is ready. Your name and membership number are filled in: check them and tap Sign in.</span>
+        </sc-if>
       </div>
       <sc-if value="{{ loginRider }}" hint-placeholder-val="{{ true }}">
       <div style="display:flex;flex-direction:column;gap:6px">
@@ -423,11 +426,13 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
           </div>
           </sc-if>
 
-          <sc-if value="{{ needsPhone }}" hint-placeholder-val="{{ false }}">
-            <div style="background:rgba(201,162,74,.16);border:1px solid rgba(201,162,74,.45);border-radius:20px;padding:15px 17px;display:flex;flex-direction:column;gap:10px">
-              <span style="font-size:14px;color:#14372B;font-weight:600">Add your mobile number</span>
-              <span style="font-size:12px;color:#3E4C44;line-height:1.55">So Equicare can reach you about your sessions. It takes 10 seconds.</span>
-              <button onClick="{{ openPhoneEdit }}" style="border:none;background:#14372B;color:#FAF7F0;font-size:14px;font-weight:600;padding:12px;border-radius:999px;cursor:pointer">Add it now</button>
+          <sc-if value="{{ pfMissing }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ openPf }}" style="background:rgba(201,162,74,.16);border:1px solid rgba(201,162,74,.45);border-radius:20px;padding:14px 17px;display:flex;align-items:center;gap:12px;cursor:pointer">
+              <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">
+                <span style="font-size:14px;color:#14372B;font-weight:600">{{ pfBannerTitle }}</span>
+                <span style="font-size:12px;color:#3E4C44;line-height:1.5">{{ pfBannerLine }}</span>
+              </div>
+              <span style="flex:none;font-size:13px;color:#8A6A22;font-weight:700">Complete ›</span>
             </div>
           </sc-if>
 
@@ -1102,6 +1107,70 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
   </div>
 </sc-if>
 
+<sc-if value="{{ pfOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:rgba(20,55,43,.5);display:flex;flex-direction:column;justify-content:flex-end;z-index:28">
+    <div onClick="{{ pfLater }}" style="flex:1;min-height:40px;cursor:pointer"></div>
+    <div class="eqscroll" style="background:#FAF7F0;border-radius:30px 30px 0 0;padding:24px 22px calc(26px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:15px;max-height:88%;overflow-y:auto">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-family:Marcellus,serif;font-size:22px;color:#14372B">{{ pfTitle }}</span>
+        <span style="font-size:13px;color:#5E6B63;line-height:1.55">{{ pfSub }}</span>
+      </div>
+      <sc-if value="{{ pfAskPhone }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Mobile / WhatsApp</label>
+          <div style="display:flex;gap:8px">
+            <select data-f="phoneCc" value="{{ pfPhoneCc }}" onChange="{{ onPf }}" style="width:120px;flex:none;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 8px;font-size:15px;color:#14372B">
+              <sc-for list="{{ countryOptions }}" as="c" hint-placeholder-count="6"><option value="{{ c.code }}">{{ c.label }}</option></sc-for>
+            </select>
+            <input data-f="phone" value="{{ pfPhone }}" onChange="{{ onPf }}" sc-camel-input-mode="tel" placeholder="01XX XXX XXXX" style="flex:1;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:16px;color:#14372B">
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ pfAskPhone2 }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Second mobile</label>
+          <div style="display:flex;gap:8px">
+            <select data-f="phone2Cc" value="{{ pfPhone2Cc }}" onChange="{{ onPf }}" style="width:120px;flex:none;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 8px;font-size:15px;color:#14372B">
+              <sc-for list="{{ countryOptions }}" as="c" hint-placeholder-count="6"><option value="{{ c.code }}">{{ c.label }}</option></sc-for>
+            </select>
+            <input data-f="phone2" value="{{ pfPhone2 }}" onChange="{{ onPf }}" sc-camel-input-mode="tel" placeholder="A different number" style="flex:1;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:16px;color:#14372B">
+          </div>
+          <span style="font-size:12px;color:#5E6B63;line-height:1.5">If we cannot reach the first number while the rider is with us, we call this one.</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ pfAskDob }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Rider's date of birth</label>
+          <div style="display:flex;gap:6px">
+            <select data-part="d" value="{{ pfDobD }}" onChange="{{ onPfDob }}" style="flex:.85;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:14px;padding:14px 4px;font-size:14px;color:#14372B;text-align:center"><option value="">Day</option><sc-for list="{{ dobDayOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+            <select data-part="m" value="{{ pfDobM }}" onChange="{{ onPfDob }}" style="flex:1.15;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:14px;padding:14px 4px;font-size:14px;color:#14372B;text-align:center"><option value="">Month</option><sc-for list="{{ dobMonthOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+            <select data-part="y" value="{{ pfDobY }}" onChange="{{ onPfDob }}" style="flex:1;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:14px;padding:14px 4px;font-size:14px;color:#14372B;text-align:center"><option value="">Year</option><sc-for list="{{ dobYearOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ pfAskMember }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Membership number</label>
+          <input data-f="member" value="{{ pfMember }}" onChange="{{ onPf }}" sc-camel-input-mode="numeric" placeholder="26604/1" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:16px;color:#14372B">
+        </div>
+      </sc-if>
+      <sc-if value="{{ pfAskGuardian }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Parent or guardian's name</label>
+          <input data-f="guardian" value="{{ pfGuardian }}" onChange="{{ onPf }}" placeholder="Full name" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:16px;color:#14372B">
+        </div>
+      </sc-if>
+      <sc-if value="{{ pfHasErr }}" hint-placeholder-val="{{ false }}">
+        <div style="background:rgba(160,60,40,.1);color:#9B3A22;border-radius:14px;padding:11px 15px;font-size:13px;line-height:1.5">{{ pfErr }}</div>
+      </sc-if>
+      <button onClick="{{ pfSave }}" style="border:none;background:#14372B;color:#FAF7F0;font-size:16px;font-weight:600;padding:17px;border-radius:999px;cursor:pointer" style-hover="background:#0F2A20">Save</button>
+      <sc-if value="{{ pfCanLater }}" hint-placeholder-val="{{ true }}">
+        <span onClick="{{ pfLater }}" style="font-size:13px;color:#5E6B63;text-align:center;cursor:pointer;text-decoration:underline">Later</span>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
 <sc-if value="{{ phoneConfirmOpen }}" hint-placeholder-val="{{ false }}">
   <div style="position:absolute;inset:0;background:rgba(20,55,43,.5);display:flex;flex-direction:column;justify-content:flex-end;z-index:29">
     <div onClick="{{ closePhoneConfirm }}" style="flex:1;cursor:pointer"></div>
@@ -1156,13 +1225,17 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
       </sc-if>
 
       <div style="background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:10px">
-        <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6B63;font-weight:600">InstaPay IBAN</span>
-        <span style="font-size:15px;color:#14372B;font-weight:600;letter-spacing:.02em;word-break:break-all;line-height:1.5">{{ ibanPretty }}</span>
+        <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6B63;font-weight:600">Pay by InstaPay or bank transfer</span>
+        <div style="display:flex;flex-direction:column">
+          <div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(20,55,43,.07)"><span style="font-size:13px;color:#5E6B63">Bank</span><span style="font-size:13px;color:#14372B;font-weight:600">{{ payBank }}</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(20,55,43,.07)"><span style="font-size:13px;color:#5E6B63">Account number</span><span style="font-size:15px;color:#14372B;font-weight:700;letter-spacing:.04em">{{ ibanPretty }}</span></div>
+          <div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0"><span style="font-size:13px;color:#5E6B63">Name</span><span style="font-size:13px;color:#14372B;font-weight:600">{{ payName }}</span></div>
+        </div>
         <sc-if value="{{ notCopied }}" hint-placeholder-val="{{ true }}">
-          <button onClick="{{ copyIban }}" style="border:1px solid rgba(20,55,43,.2);background:transparent;color:#14372B;font-size:14px;font-weight:600;padding:12px;border-radius:999px;cursor:pointer" style-hover="background:rgba(20,55,43,.05)">Copy IBAN</button>
+          <button onClick="{{ copyIban }}" style="border:1px solid rgba(20,55,43,.2);background:transparent;color:#14372B;font-size:14px;font-weight:600;padding:12px;border-radius:999px;cursor:pointer" style-hover="background:rgba(20,55,43,.05)">Copy the account number</button>
         </sc-if>
         <sc-if value="{{ copied }}" hint-placeholder-val="{{ false }}">
-          <div style="border:1px solid rgba(46,125,91,.35);background:rgba(46,125,91,.08);color:#2E7D5B;font-size:14px;font-weight:600;padding:12px;border-radius:999px;text-align:center">✓ Copied — paste it in InstaPay</div>
+          <div style="border:1px solid rgba(46,125,91,.35);background:rgba(46,125,91,.08);color:#2E7D5B;font-size:14px;font-weight:600;padding:12px;border-radius:999px;text-align:center">✓ Copied — paste it in InstaPay or your bank app</div>
         </sc-if>
       </div>
 
@@ -1172,14 +1245,14 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
         </a>
       </sc-if>
       <sc-if value="{{ noInstapayLink }}" hint-placeholder-val="{{ true }}">
-        <div style="background:rgba(20,55,43,.06);color:#5E6B63;font-size:14px;padding:15px 17px;border-radius:18px;text-align:center;line-height:1.5">Open your InstaPay app and paste the IBAN above.</div>
+        <div style="background:rgba(20,55,43,.06);color:#5E6B63;font-size:14px;padding:15px 17px;border-radius:18px;text-align:center;line-height:1.5">In InstaPay: Send money → Bank account → Crédit Agricole → paste the number.</div>
       </sc-if>
 
       <div style="display:flex;flex-direction:column;gap:8px">
         <a href="{{ waReceipt }}" onClick="{{ sentReceipt }}" target="_blank" rel="noopener" style="text-decoration:none">
           <div style="border:1px solid rgba(20,55,43,.2);color:#14372B;font-size:15px;font-weight:500;padding:15px;border-radius:999px;text-align:center">Send the receipt on WhatsApp</div>
         </a>
-        <span style="font-size:12px;color:#5E6B63;text-align:center;line-height:1.5">Paste the IBAN under Bank Account, then send us the receipt. Sessions are added once we confirm the transfer.</span>
+        <span style="font-size:12px;color:#5E6B63;text-align:center;line-height:1.5">In InstaPay choose Send money → Bank account → Crédit Agricole, paste the number, and send us the receipt. Sessions are added once we confirm the transfer.</span>
       </div>
 
       <div onClick="{{ payCash }}" style="text-align:center;cursor:pointer;padding-top:2px">
@@ -1437,6 +1510,7 @@ function mapRider(x) {
   const c = x.card, lv = LEVELS[x.level] || LEVELS[1];
   return { id:x.id, name:x.name, member:x.member || "", level:x.level, dob:String(x.dob || "").slice(0, 10),
     monthly: !!x.monthly, levelOk: x.level_confirmed !== false, imported: !!x.imported,
+    phone2: String(x.phone2 || ""), email: x.email || "",
     credits: c ? c.left : 0, total: c ? c.total : lv.card,
     expires: c && c.expires ? prettyDate(c.expires) : "—", expiresOn: c && c.expires ? endOfDay(c.expires) : null,
     owed: x.owed || 0, trainer: x.trainer || "To be assigned", guardian: x.guardian || "", phone: phoneShow(x.phone),
@@ -1494,7 +1568,7 @@ const HELP = [
   { q:"I already ride at Equicare. Do I need the free test?", a:"No. When you create your account, pick I already ride at Equicare and choose your level. Equicare links your record and adds the sessions you have left, usually the same day." },
   { q:"How do I book a session?", a:"• Open Book and pick a day\n• Pick a free time\n• Check the details and confirm\n• One session comes off your card\n\nOnly the days your level rides are shown.",  img:"assets/help/book.jpg", ratio:"0.8519", imgH:"100.00%", top:"0.00%", shot:"The Book tab with a time selected" },
   { q:"How do I cancel and get my session back?", a:"• Open Sessions and find the booking\n• Tap Cancel\n\nMore than 24 hours ahead: the session goes straight back on your card.\n\nInside 24 hours: the button is gone and the session is counted — the horses are already assigned.",  img:"assets/help/sessions.jpg", ratio:"2.1395", imgH:"490.91%", top:"-51.16%", shot:"A session card with the cancel button" },
-  { q:"How do I renew my card?", a:"• Tap Renew on your card\n• Copy the IBAN and pay on InstaPay\n• Send the receipt on WhatsApp\n\nSessions appear once Equicare confirms it. Paying cash at the desk is at the bottom of the same screen.",  img:"assets/help/renew.jpg", ratio:"0.9829", imgH:"115.38%", top:"-15.38%", shot:"The renew screen with the IBAN" },
+  { q:"How do I renew my card?", a:"• Tap Renew on your card\n• Copy the account number and pay on InstaPay (Send money → Bank account → Crédit Agricole) or from your bank app\n• Send the receipt on WhatsApp\n\nSessions appear once Equicare confirms it. Paying cash at the desk is at the bottom of the same screen.",  img:"assets/help/renew.jpg", ratio:"0.9829", imgH:"115.38%", top:"-15.38%", shot:"The renew screen with the IBAN" },
   { q:"How does the card expiry work?", a:"• A card runs 30 days from its first session\n• The home screen counts the days left\n• Unused sessions stop at the end\n\nTravelling or unwell? Tell Equicare — they can add days to your card.",  img:"assets/help/card.jpg", ratio:"2.5556", imgH:"300.00%", top:"-113.89%", shot:"" },
   { q:"How do I add a second child?", a:"• Open Profile, tap Add another rider\n• Enter their name, membership number and date of birth\n\nSwitch between riders at the top of Profile. They can book as soon as they have a card.",  img:"assets/help/profile.jpg", ratio:"1.9574", imgH:"229.79%", top:"-61.70%", shot:"The profile with Add another rider" },
   { q:"How do I add a session to my calendar?", a:"• Open Sessions and find the booking\n• Tap Add to calendar, then pick Google, or Apple or Outlook\n\nIt adds that one session with a reminder two hours before. If the session later moves, add the new time again.",  img:"assets/help/sessions.jpg", ratio:"3.0667", imgH:"360.00%", top:"-73.33%", shot:"" },
@@ -1527,7 +1601,9 @@ const DOCS = {
   ]}
 };
 
-const IBAN = "EG390003011630704454200000100";const IBAN_PRETTY = "EG-390003011630704454200000100";
+// Until the InstaPay address and Paymob are ready: Equicare's bank account.
+const IBAN = "00061100005993"; const IBAN_PRETTY = "00061100005993";
+const PAY_BANK = "Crédit Agricole Egypt", PAY_NAME = "Khaled Assem";
 // Opens the InstaPay app if installed. A link that pre-fills the account
 // needs Equicare's own payment address from InstaPay (see PROJECT-PLAN.md).
 const INSTAPAY_LINK = "https://ipn.eg";
@@ -1742,7 +1818,7 @@ class Component extends DCLogic {
       daysAsk: false, daysReason: "Travel", daysNote: "",
       su: freshSu(),
       suErr:"",
-      dobP: { su:{d:"",m:"",y:""}, add:{d:"",m:"",y:""}, fg:{d:"",m:"",y:""}, lg:{d:"",m:"",y:""} },
+      dobP: { su:{d:"",m:"",y:""}, add:{d:"",m:"",y:""}, fg:{d:"",m:"",y:""}, lg:{d:"",m:"",y:""}, pf:{d:"",m:"",y:""} },
       activeRider: "r1",
       riders: LIVE ? [] : [
         { id:"r1", name:"Yassin Haitham", member:"26604/1", level:2, dob:"2009-09-29", credits:7, total:12, expires:"12 Oct 2026", expiresOn:new Date(2026,9,12), owed:0, trainer:"Abdel Rahman", guardian:"Heba Mostafa", phone:"+20 102 144 0437", waiver:"2 Sep 2026", testDone:true, appCreated:false, lessonsDone:9, lifetime:33, prev:{ label:"12-lesson card", price:4620, expired:"10 Aug 2026" } },
@@ -1795,6 +1871,15 @@ class Component extends DCLogic {
       const w = window.localStorage.getItem("equicare.wa");
       if (w && /^\d{8,15}$/.test(w)) this.setState({ waDigits: w });
     } catch (e) {}
+    try {
+      const q = new URLSearchParams(location.search), qm = q.get("m"), qn = q.get("n");
+      if (qm || qn) {
+        let known = false;
+        try { known = !!window.localStorage.getItem("equicare.session"); } catch (e) {}
+        if (!known) this.setState(s => ({ loginStaff:false, askDob:false, invited: true,
+          login: Object.assign({}, s.login, { rname: qn || "", memberId: qm ? maskMember(qm) : "" }) }));
+      }
+    } catch (e) {}
     if (LIVE) {
       let remembered = false;
       try { remembered = !!window.localStorage.getItem("equicare.session"); } catch (e) {}
@@ -1829,6 +1914,16 @@ class Component extends DCLogic {
       if (this.state.availFor !== key && this._slotReq !== key) {
         this._slotReq = key;
         this.loadSlots(lv, key).catch(e => this.flash(e.message)).then(() => { this._slotReq = null; });
+      }
+    }
+    if (LIVE && this.state.screen === "app" && this.state.tour === null && !this.state.pf) {
+      const r = this.rider(), miss = this.missingOf(r);
+      this._pfAsked = this._pfAsked || {};
+      if (miss.length && !this._pfAsked[r.id]) {
+        this._pfAsked[r.id] = true;
+        let snoozed = false;
+        try { snoozed = Date.now() - Number(window.localStorage.getItem("equicare.pf." + r.id) || 0) < 3 * 86400000; } catch (e) {}
+        if (!snoozed) this.openProfile(false);
       }
     }
     if (this._lastTour !== this.state.tour) {
@@ -1947,6 +2042,26 @@ class Component extends DCLogic {
   }
 
   rider() { return this.state.riders.find(r => r.id === this.state.activeRider) || this.state.riders[0] || NOBODY; }
+
+  // What Equicare's file is missing for this rider. Mobile is the only one that
+  // ever blocks anything (booking); the rest is asked for, never forced.
+  missingOf(r) {
+    if (!LIVE || !r || r.id === "none" || r.linkPending) return [];
+    const dig = v => String(v || "").replace(/\D/g, "");
+    const age = r.dob ? Math.floor((NOW - new Date(r.dob)) / 31557600000) : null;
+    const out = [];
+    if (!dig(r.phone)) out.push("phone");
+    if (!dig(r.phone2) || dig(r.phone2) === dig(r.phone)) out.push("phone2");
+    if (!r.dob) out.push("dob");
+    if (!r.member) out.push("member");
+    if (!r.guardian && (age === null || age < 18)) out.push("guardian");
+    return out;
+  }
+  openProfile(required) {
+    const r = this.rider();
+    this.setState(s => ({ pf: { required: !!required, ask: this.missingOf(r), phoneCc: "EG", phone: "", phone2Cc: "EG", phone2: "",
+      dob: "", member: "", guardian: "", err: "" }, dobP: Object.assign({}, s.dobP, { pf: { d:"", m:"", y:"" } }) }));
+  }
 
   flash(msg) {
     this.setState({ toast: msg });
@@ -2255,6 +2370,7 @@ class Component extends DCLogic {
         if (group === "add") { next.addDob = iso; next.addErr = ""; }
         if (group === "fg") { next.fgDob = iso; next.fgErr = ""; next.fgName = ""; }
         if (group === "lg") { next.login = Object.assign({}, s.login, { dob: iso }); next.loginErr = ""; }
+        if (group === "pf" && s.pf) { next.pf = Object.assign({}, s.pf, { dob: iso, err: "" }); }
         return next;
       });
     };
@@ -2287,7 +2403,7 @@ class Component extends DCLogic {
       isLogin: st.screen === "login", isSignup: st.screen === "signup", isApp: st.screen === "app",
       isHome: st.tab === "home", isBook: st.tab === "book", isSessions: st.tab === "sessions", isProfile: st.tab === "profile",
 
-      loginRname: st.login.rname || "", askDob: !!st.askDob,
+      loginRname: st.login.rname || "", askDob: !!st.askDob, invited: !!st.invited,
       loginId: st.login.memberId, loginName: st.login.name, loginPin: st.login.pin,
       loginRider: !st.loginStaff, loginStaff: st.loginStaff,
       staffToggleLabel: st.loginStaff ? "Rider sign in" : "Staff sign in",
@@ -2413,7 +2529,7 @@ class Component extends DCLogic {
       closeRenewWarn: () => S({ renewWarn:false }),
       renewAnyway: () => S({ renewWarn:false, pay:true, copied:false }),
       closePay: () => S({ pay:false, copied:false }),
-      ibanPretty: IBAN_PRETTY,
+      ibanPretty: IBAN_PRETTY, payBank: PAY_BANK, payName: PAY_NAME,
       hasInstapayLink: !!INSTAPAY_LINK,
       noInstapayLink: !INSTAPAY_LINK,
       instapayLink: INSTAPAY_LINK || "#",
@@ -2575,6 +2691,74 @@ class Component extends DCLogic {
       levelKnown: !needsTest && !(r.monthly && !hasCard) && !((r.levelOk === false || r.imported) && firstCard), levelPending: needsTest,
       levelText: needsTest ? "Level pending" : "Level " + r.level,
       showCard: !needsTest && hasCard && !r.linkPending,
+      ...(() => {
+        const miss = this.missingOf(r), pf = st.pf, ask = pf ? pf.ask : [];
+        const words = { phone:"mobile number", phone2:"second mobile", dob:"birth date", member:"membership number", guardian:"parent's name" };
+        const list = miss.map(m => words[m]);
+        const say = l => l.length <= 1 ? (l[0] || "") : l.slice(0, -1).join(", ") + " and " + l[l.length - 1];
+        const first = r.name.split(" ")[0];
+        return {
+          pfMissing: miss.length > 0 && !r.linkPending,
+          pfBannerTitle: miss.length === 1 ? "1 detail missing" : miss.length + " details missing",
+          pfBannerLine: "Equicare's file has no " + say(list) + " for " + first + ".",
+          openPf: () => this.openProfile(false),
+          pfOpen: !!pf,
+          pfTitle: pf && pf.required ? "A mobile number first" : "Complete " + first + "'s details",
+          pfSub: pf && pf.required
+            ? "Equicare has to be able to reach you about a session. Add a mobile number and the booking carries on."
+            : "Our paper file is missing " + say(ask.map(m => words[m])) + ". It takes a minute, and we will not ask again once it is done.",
+          pfAskPhone: ask.indexOf("phone") !== -1, pfAskPhone2: ask.indexOf("phone2") !== -1 && !(pf && pf.required),
+          pfAskDob: ask.indexOf("dob") !== -1 && !(pf && pf.required), pfAskMember: ask.indexOf("member") !== -1 && !(pf && pf.required),
+          pfAskGuardian: ask.indexOf("guardian") !== -1 && !(pf && pf.required),
+          pfPhoneCc: pf ? pf.phoneCc : "EG", pfPhone: pf ? pf.phone : "", pfPhone2Cc: pf ? pf.phone2Cc : "EG", pfPhone2: pf ? pf.phone2 : "",
+          pfMember: pf ? pf.member : "", pfGuardian: pf ? pf.guardian : "",
+          pfDobD: st.dobP.pf.d, pfDobM: st.dobP.pf.m, pfDobY: st.dobP.pf.y,
+          onPfDob: e => setDobPart("pf", e.target.dataset.part, e.target.value),
+          onPf: e => {
+            const f = e.target.dataset.f; let v = e.target.value;
+            if (f === "member") v = maskMember(v);
+            if (f === "phone" || f === "phone2") v = v.replace(/\D/g, "").slice(0, 15);
+            this.setState(s => ({ pf: Object.assign({}, s.pf, { [f]: v, err: "" }) }));
+          },
+          pfHasErr: !!(pf && pf.err), pfErr: pf ? pf.err : "",
+          pfCanLater: !(pf && pf.required),
+          pfLater: () => {
+            if (pf && pf.required) return S({ pf: null });
+            try { window.localStorage.setItem("equicare.pf." + r.id, String(Date.now())); } catch (e) {}
+            S({ pf: null });
+          },
+          pfSave: () => {
+            if (!pf) return;
+            const out = {}, dial = cc => (COUNTRIES.find(x => x.code === cc) || COUNTRIES[0]).dial;
+            const err = m => S({ pf: Object.assign({}, pf, { err: m }) });
+            if (pf.ask.indexOf("phone") !== -1 && pf.phone) {
+              if (!phoneOk(pf.phoneCc, pf.phone)) return err(pf.phoneCc === "EG" ? "Egyptian mobile numbers are 11 digits starting with 01." : "That mobile number does not look complete.");
+              out.phone = dial(pf.phoneCc) + pf.phone.replace(/^0+/, "");
+            }
+            if (pf.required && !out.phone) return err("Write a mobile number.");
+            if (pf.phone2) {
+              if (!phoneOk(pf.phone2Cc, pf.phone2)) return err("The second mobile number does not look complete.");
+              out.phone2 = dial(pf.phone2Cc) + pf.phone2.replace(/^0+/, "");
+              const main = (out.phone || String(r.phone || "")).replace(/\D/g, "");
+              if (out.phone2 === main) return err("The second number has to be a different one.");
+            }
+            if (pf.dob) {
+              const a = Math.floor((NOW - new Date(pf.dob)) / 31557600000);
+              if (a < 3 || a > 95) return err("Check the birth date.");
+              out.dob = pf.dob;
+            }
+            if (pf.member) { if (!memberOk(pf.member)) return err("Write the membership number, like 26604/1."); out.member = pf.member.trim(); }
+            if (pf.guardian.trim()) out.guardian = pf.guardian.trim();
+            if (!Object.keys(out).length) return err("Fill in at least one detail, or tap Later.");
+            this.liveDo(async db => {
+              await db.rpc("update_my_profile", { p_rider: r.id, p: out });
+              await this.loadLive({ pf: null });
+              this.flash("Thank you, saved");
+              if (pf.required) this.setState({ confirmSheet: true });
+            }, e => err(e.message));
+          }
+        };
+      })(),
       showBuyFirst: !needsTest && firstCard && !r.linkPending && !r.monthly && r.levelOk !== false && !r.imported,
       showMonthly: !!r.monthly && !hasCard,
       showWelcomeBack: !needsTest && firstCard && !r.linkPending && !r.monthly && (r.levelOk === false || r.imported),
@@ -2582,7 +2766,7 @@ class Component extends DCLogic {
       backLine: r.levelOk === false
         ? "You are on Equicare's register. Send us a message and we confirm your level and your card, then booking opens here."
         : "Equicare is putting in the sessions left on your paper card. Booking opens here as soon as it is in. Until then, message us to book.",
-      needsPhone: LIVE && r.id !== "none" && !String(r.phone || "").replace(/\D/g, ""),
+
       waBack: waLink(st.waDigits, "Hello Equicare, this is " + r.name + (r.member ? " (member " + r.member + ")" : "") + ". I would like to ride again. Which level and card?"),
       linkPending: !!r.linkPending,
       linkLine: "You told us you ride Level " + r.level + ". Equicare is matching you to your record, and your sessions left appear here once it is done — usually the same day.",
@@ -2600,7 +2784,7 @@ class Component extends DCLogic {
       creditsLeft: r.credits, creditsTotal: r.total, creditsPct: Math.round(r.credits / (r.total || 1) * 100) + "%",
       cardLabel: cfg.label, cardExpiry: r.expires, cardNote: firstCard ? "Buy your card" : (renewDue ? "Renew soon" : "Renew"),
       expiryCountdown: (() => {
-        if (!r.expiresOn) return "No card yet";
+        if (!r.expiresOn) return r.credits > 0 ? "30 days start at your next session" : "No card yet";
         const d = Math.ceil((r.expiresOn.getTime() - NOW.getTime()) / 86400000);
         if (d < 0) return "Expired " + r.expires;
         if (d === 0) return "Expires today";
@@ -2675,7 +2859,10 @@ class Component extends DCLogic {
       afterExpiryLine: "This session is after your card expires on " + r.expires + ". You can still book it — it will be taken from your next card.",
       canConfirm: !!selTime && (testMode || !!st.moving || r.credits > 0),
       confirmOpen: st.confirmSheet && !!selTime,
-      askConfirm: () => S({ confirmSheet:true }),
+      askConfirm: () => {
+        if (LIVE && !testMode && !String(r.phone || "").replace(/\D/g, "")) return this.openProfile(true);
+        S({ confirmSheet:true });
+      },
       closeConfirm: () => S({ confirmSheet:false }),
       confirmTitle: st.moving ? "Move your test to this time?" : (testMode ? "Book this evaluation?" : "Book this session?"),
       confirmSub: st.moving ? "The booking moves across — nothing extra comes off your card." : (testMode ? "The trainer assesses the level during the ride." : "One session comes off your card when you confirm."),
