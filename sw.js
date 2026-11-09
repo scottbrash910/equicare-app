@@ -1,4 +1,4 @@
-const CACHE = "equicare-v27";
+const CACHE = "equicare-v29";
 const SHELL = ["index.html", "admin.html", "support.js", "ar.js", "eqdb.js", "manifest.json",
   "assets/equicare-crest.png", "assets/equicare-wordmark.png", "assets/gsc-mark.png",
   "icon-180.png", "icon-192.png", "icon-512.png"];
