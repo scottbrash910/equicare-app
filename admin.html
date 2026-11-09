@@ -233,6 +233,9 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
                         </select>
                       </div>
                     </sc-if>
+                    <sc-if value="{{ rw.canCancel }}" hint-placeholder-val="{{ false }}">
+                      <span onClick="{{ rw.cancel }}" style="align-self:flex-start;font-size:12px;color:#9B3A22;cursor:pointer;text-decoration:underline">Cancel this booking</span>
+                    </sc-if>
                     <sc-if value="{{ rw.isMissed }}" hint-placeholder-val="{{ false }}">
                       <button onClick="{{ rw.giveBack }}" style="border:1px solid rgba(20,55,43,.2);background:transparent;color:#14372B;font-size:13px;font-weight:500;padding:11px;border-radius:999px;cursor:pointer" style-hover="background:rgba(20,55,43,.05)">Give the session back</button>
                     </sc-if>
@@ -296,6 +299,7 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
               <span style="font-size:12px;color:#5E6B63;line-height:1.5">{{ blockedList }}</span>
             </div>
           </sc-if>
+          <button onClick="{{ openBookDay }}" style="border:none;background:#C9A24A;color:#14372B;font-size:15px;font-weight:600;padding:14px;border-radius:999px;cursor:pointer" style-hover="background:#B98F35">Book a rider on this day</button>
           <button onClick="{{ openBlock }}" style="background:transparent;border:1px solid rgba(20,55,43,.2);color:#14372B;font-size:14px;font-weight:500;padding:13px;border-radius:999px;cursor:pointer" style-hover="background:rgba(20,55,43,.05)">Block a time</button>
         </div>
       </div>
@@ -325,11 +329,20 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
               </div>
               <span style="font-size:12px;color:#5E6B63">{{ q.meta }}</span>
               <sc-if value="{{ q.hasMatch }}" hint-placeholder-val="{{ true }}">
-                <div style="background:rgba(46,125,91,.08);border-radius:12px;padding:10px 12px;font-size:12px;color:#2E7D5B;font-weight:600">{{ q.matchLine }}</div>
-                <button onClick="{{ q.link }}" style="border:none;background:#14372B;color:#FAF7F0;font-size:14px;font-weight:600;padding:12px;border-radius:999px;cursor:pointer" style-hover="background:#0F2A20">{{ q.linkLabel }}</button>
+                <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5E6B63;font-weight:600">Best matches on the register</span>
+                <sc-for list="{{ q.sugg }}" as="g" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:10px;background:rgba(46,125,91,.06);border:1px solid rgba(46,125,91,.2);border-radius:14px;padding:10px 12px">
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0">
+                      <span style="font-size:13px;color:#14372B;font-weight:600">{{ g.name }}</span>
+                      <span style="font-size:11px;color:#5E6B63;line-height:1.4">{{ g.meta }}</span>
+                      <span style="font-size:11px;color:#2E7D5B;font-weight:600">{{ g.why }}</span>
+                    </div>
+                    <button onClick="{{ g.link }}" style="flex:none;border:none;background:#14372B;color:#FAF7F0;font-size:13px;font-weight:600;padding:10px 14px;border-radius:999px;cursor:pointer">Link</button>
+                  </div>
+                </sc-for>
               </sc-if>
               <sc-if value="{{ q.noMatch }}" hint-placeholder-val="{{ false }}">
-                <div style="background:rgba(201,162,74,.14);border-radius:12px;padding:10px 12px;font-size:12px;color:#8A6A22;font-weight:600">No record with this number or birthday</div>
+                <div style="background:rgba(201,162,74,.14);border-radius:12px;padding:10px 12px;font-size:12px;color:#8A6A22;font-weight:600">No record matches the number, name, birth date or phone</div>
                 <button onClick="{{ q.add }}" style="border:none;background:#14372B;color:#FAF7F0;font-size:14px;font-weight:600;padding:12px;border-radius:999px;cursor:pointer" style-hover="background:#0F2A20">{{ q.addLabel }}</button>
               </sc-if>
               <button onClick="{{ q.test }}" style="background:transparent;border:1px solid rgba(20,55,43,.2);color:#5E6B63;font-size:13px;font-weight:500;padding:10px;border-radius:999px;cursor:pointer" style-hover="color:#14372B;border-color:rgba(20,55,43,.4)">Not one of ours · free test</button>
@@ -945,6 +958,15 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
       </div>
     </div>
     <div class="eqs" style="flex:1;overflow-y:auto;padding:18px 20px 20px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <button onClick="{{ pBook }}" style="border:none;background:#C9A24A;color:#14372B;font-size:15px;font-weight:600;padding:15px;border-radius:999px;cursor:pointer" style-hover="background:#B98F35">Book a session</button>
+        <sc-for list="{{ pUpcoming }}" as="u" hint-placeholder-count="1">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:14px;padding:11px 14px">
+            <span style="font-size:13px;color:#14372B;font-weight:500">{{ u.when }}</span>
+            <span onClick="{{ u.cancel }}" style="flex:none;font-size:12px;color:#9B3A22;font-weight:600;cursor:pointer">Cancel</span>
+          </div>
+        </sc-for>
+      </div>
       <sc-if value="{{ pIncomplete }}" hint-placeholder-val="{{ false }}">
         <div style="background:rgba(201,162,74,.16);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px">
           <span style="font-size:13px;color:#14372B;font-weight:600">Profile not finished</span>
@@ -961,6 +983,9 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
         </div>
         <sc-if value="{{ pDueTest }}" hint-placeholder-val="{{ false }}">
           <span style="font-size:12px;color:#8A6A22">{{ pDueNote }}</span>
+        </sc-if>
+        <sc-if value="{{ pLevelUnsure }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:12px;color:#9B3A22;line-height:1.5">Level not confirmed — the paper form did not say. Tap the right level to confirm it.</span>
         </sc-if>
       </div>
 
@@ -1219,6 +1244,75 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
   </div>
 </sc-if>
 
+<sc-if value="{{ bkOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:#FAF7F0;display:flex;flex-direction:column;z-index:33">
+    <div style="background:#14372B;padding:calc(16px + env(safe-area-inset-top)) 20px 16px;display:flex;align-items:center;gap:13px;flex:none">
+      <button onClick="{{ bkClose }}" style="background:transparent;border:none;color:#C9A24A;font-size:21px;cursor:pointer;padding:0;line-height:1">‹</button>
+      <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+        <span style="font-family:Marcellus,serif;font-size:18px;color:#FAF7F0">{{ bkTitle }}</span>
+        <span style="font-size:12px;color:rgba(250,247,240,.6)">{{ bkSub }}</span>
+      </div>
+    </div>
+    <div class="eqs" style="flex:1;overflow-y:auto;padding:16px 20px 24px;display:flex;flex-direction:column;gap:14px">
+      <sc-if value="{{ bkPickRider }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <input value="{{ bkQuery }}" onChange="{{ bkOnQuery }}" placeholder="Type 2–3 letters of the name, or the number" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:999px;padding:13px 18px;font-size:15px;color:#14372B">
+          <sc-for list="{{ bkRiders }}" as="r" hint-placeholder-count="4">
+            <div onClick="{{ r.pick }}" style="background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;cursor:pointer" style-hover="border-color:#C9A24A">
+              <span style="font-size:14px;color:#14372B;font-weight:600">{{ r.name }}</span>
+              <span style="font-size:12px;color:#5E6B63">{{ r.meta }}</span>
+            </div>
+          </sc-for>
+          <span style="font-size:12px;color:#5E6B63;line-height:1.5">{{ bkRiderHint }}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ bkPickTime }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-if value="{{ bkHasNote }}" hint-placeholder-val="{{ false }}">
+            <div style="background:rgba(201,162,74,.16);border-radius:14px;padding:11px 13px;font-size:12px;color:#3E4C44;line-height:1.5">{{ bkNote }}</div>
+          </sc-if>
+          <div style="display:flex;gap:7px;overflow-x:auto" class="eqs">
+            <sc-for list="{{ bkDays }}" as="d" hint-placeholder-count="5">
+              <div onClick="{{ d.pick }}" style="flex:none;width:62px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0;border-radius:14px;cursor:pointer;background:{{ d.bg }};color:{{ d.fg }};border:1px solid rgba(20,55,43,.12)">
+                <span style="font-size:10px;font-weight:600;letter-spacing:.08em">{{ d.dow }}</span>
+                <span style="font-family:Marcellus,serif;font-size:18px;line-height:1">{{ d.day }}</span>
+                <span style="font-size:10px">{{ d.mon }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ bkLoading }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:13px;color:#5E6B63;text-align:center;padding:20px 0">Loading the times…</span>
+          </sc-if>
+          <sc-for list="{{ bkSlots }}" as="s" hint-placeholder-count="6">
+            <div onClick="{{ s.pick }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:{{ s.bg }};border:1px solid {{ s.border }};border-radius:14px;padding:13px 15px;cursor:pointer">
+              <span style="font-family:Marcellus,serif;font-size:17px;color:#14372B">{{ s.time }}</span>
+              <span style="font-size:12px;color:{{ s.noteColor }};text-align:right">{{ s.note }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ bkNoSlots }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:13px;color:#5E6B63;text-align:center;padding:20px 0;line-height:1.5">No times for this level on this day.</span>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ bkDone }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="background:rgba(46,125,91,.08);border:1px solid rgba(46,125,91,.3);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#2E7D5B;font-weight:700">Booked</span>
+            <span style="font-family:Marcellus,serif;font-size:20px;color:#14372B">{{ bkDoneWhen }}</span>
+            <span style="font-size:12px;color:#3E4C44;line-height:1.5">{{ bkDoneNote }}</span>
+          </div>
+          <a href="{{ bkWa }}" target="_blank" rel="noopener" style="text-decoration:none">
+            <div style="background:#14372B;color:#FAF7F0;font-size:15px;font-weight:600;padding:15px;border-radius:999px;text-align:center">Send the confirmation on WhatsApp</div>
+          </a>
+          <button onClick="{{ bkAgain }}" style="background:transparent;border:1px solid rgba(20,55,43,.2);color:#14372B;font-size:14px;font-weight:500;padding:13px;border-radius:999px;cursor:pointer">Book another time for {{ bkFirst }}</button>
+          <button onClick="{{ bkOther }}" style="background:transparent;border:1px solid rgba(20,55,43,.2);color:#14372B;font-size:14px;font-weight:500;padding:13px;border-radius:999px;cursor:pointer">Book someone else</button>
+          <button onClick="{{ bkClose }}" style="background:transparent;border:none;color:#5E6B63;font-size:13px;padding:8px;cursor:pointer;text-decoration:underline">Done</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
 <sc-if value="{{ askOpen }}" hint-placeholder-val="{{ false }}">
   <div style="position:absolute;inset:0;background:rgba(20,55,43,.5);display:flex;flex-direction:column;justify-content:flex-end;z-index:37">
     <div onClick="{{ askCancel }}" style="flex:1;cursor:pointer"></div>
@@ -1399,13 +1493,15 @@ function fromLive(d) {
     const c = x.card, base = lv[x.level] || { card: 12 }, missing = [];
     if (!x.dob) missing.push("Date of birth");
     if (!x.phone) missing.push("Phone");
-    return { id:x.id, name:x.name, member:x.member, level:x.level, dob: day10(x.dob) || "",
+    return { id:x.id, name:x.name, member:x.member || "", level:x.level, dob: day10(x.dob) || "",
       credits: c ? c.left : 0, total: c ? c.total : base.card, trainer: x.trainer || lt[x.level] || "",
       phone: x.phone || "", lessons: x.lessons || 0, lifetime: x.lifetime || 0,
       lastRide: x.last_ride ? isoOf(new Date(x.last_ride)) : day10(x.since), missing,
       expires: c ? day10(c.expires) : null, cardLog: x.log || [], active: x.status === "active",
       since: day10(x.since), waiverOn: day10(x.waiver), occupation: x.occupation || "",
-      link: x.link, claimedLevel: x.claimed_level, asked: x.asked };
+      link: x.link, claimedLevel: x.claimed_level, asked: x.asked,
+      levelOk: x.level_confirmed !== false, monthly: !!x.monthly, aliases: x.aliases || "", base: x.base || "",
+      owed: x.owed || 0, hasLogin: !!x.has_login, reg: x.reg || "", guardian: x.guardian || "" };
   });
   const riders = all.filter(r => r.link !== "asked");
   const linkReqs = all.filter(r => r.link === "asked").map(r => {
@@ -1442,6 +1538,30 @@ function fromLive(d) {
   };
 }
 const WA = "https://api.whatsapp.com/send/?phone=201066407979&text&type=phone_number&app_absent=0";
+const APP_LINK = "https://equicare-black.vercel.app";
+// Matching a new app account to the paper register: any spelling, Arabic or English.
+function nmNorm(s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z\u0600-\u06ff ]/g, "").replace(/\s+/g, " ").trim(); }
+function nmLev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) { const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur; }
+  return prev[n];
+}
+function nmClose(a, b) { const x = nmNorm(a).split(" ")[0], y = nmNorm(b).split(" ")[0]; if (x.length < 3 || !y) return false; return nmLev(x, y) <= (y.length >= 6 ? 2 : 1); }
+function baseOfMember(m) { return String(m || "").replace(/[^\d/]/g, "").split("/")[0].replace(/^0+/, ""); }
+function regMatches(q, riders) {
+  const qb = baseOfMember(q.member), qp = String(q.phone || "").replace(/\D/g, "").slice(-8);
+  return riders.filter(x => x.id !== q.id).map(x => {
+    let s = 0; const why = [];
+    if (qb && (x.base || baseOfMember(x.member)) === qb) { s += 2; why.push("same family number"); }
+    if (nmClose(q.name, x.name) || String(x.aliases || "").split(";").some(a => nmClose(q.name, a))) { s += 2; why.push("same first name"); }
+    if (q.dob && x.dob === q.dob) { s += 2; why.push("same birth date"); }
+    if (qp.length === 8 && String(x.phone || "").replace(/\D/g, "").slice(-8) === qp) { s += 1; why.push("same phone"); }
+    return { x, s, why };
+  }).filter(o => o.why.length >= 2 || o.why[0] === "same family number").sort((a, b) => b.s - a.s || (a.x.hasLogin ? 1 : 0) - (b.x.hasLogin ? 1 : 0)).slice(0, 3);
+}
 
 function t12(h, m) {
   const ap = h >= 12 ? "PM" : "AM", hh = h % 12 === 0 ? 12 : h % 12;
@@ -1540,7 +1660,7 @@ class Component extends DCLogic {
       listSent: {}, taskSnooze: {}, laterOpen: false, wished: {},
       feedbackOpen: false, feedback: [],
       gapsOff: {}, undo: null, adminPin: "7979", pinNew: "", pinOpen: false, horsesOpen: false,
-      monthPick: null, calOpen: false, calMonth: null, monthsAll: false, cashReqs: [], dayReqs: [], blocked: {}, showBlock: false,
+      monthPick: null, bk: null, calOpen: false, calMonth: null, monthsAll: false, cashReqs: [], dayReqs: [], blocked: {}, showBlock: false,
       extReason: "Travel", extOther: "", extDate: "", recordAt: null, lang: "en",
       sales: [
         { r:"r1", level:2, price:4620, at:"2026-09-02" },
@@ -1978,6 +2098,54 @@ class Component extends DCLogic {
     }
   }
   rider(id) { return this.state.riders.find(r => r.id === id); }
+  // Staff booking for a rider: open, load the times for the rider's level, book.
+  openBook(riderId, dayIso) {
+    this.setState({ bk: { rider: riderId || null, q: "", day: dayIso || null, slots: null, done: null } });
+    if (riderId) this.loadBookSlots(riderId, dayIso);
+  }
+  loadBookSlots(riderId, dayIso) {
+    const r = this.rider(riderId);
+    if (!r || !LIVE) return;
+    dbReady().then(db => db.rpc("admin_slots", { p_level: r.level })).then(rows => {
+      const slots = (rows || []).map(x => ({ id: x.slot_id, at: new Date(x.starts_at), taken: x.taken, cap: x.cap, free: x.horses_free, blocked: !!x.blocked }));
+      this.setState(s => {
+        if (!s.bk || s.bk.rider !== riderId) return null;
+        const days = []; slots.forEach(x => { const k = isoOf(x.at); if (days.indexOf(k) === -1) days.push(k); });
+        const day = dayIso && days.indexOf(dayIso) !== -1 ? dayIso : (days[0] || dayIso);
+        return { bk: Object.assign({}, s.bk, { slots, day }) };
+      });
+    }).catch(e => this.flash(e.message));
+  }
+  doBook(slot, force) {
+    const bk = this.state.bk, r = bk && this.rider(bk.rider);
+    if (!r) return;
+    dbReady().then(db => db.rpc("admin_book", { p_slot: slot.id, p_rider: r.id, p_force: !!force })).then(res => {
+      const when = DAYS[slot.at.getDay()] + " " + slot.at.getDate() + " " + MONS[slot.at.getMonth()] + ", " + t12(slot.at.getHours(), slot.at.getMinutes());
+      if (res && res.full) {
+        return this.setState({ ask: {
+          title: "That time is full",
+          body: res.taken + " of " + res.cap + " places are taken at " + when + ". " + res.horses_free + (res.horses_free === 1 ? " horse is" : " horses are")
+            + " still free. Book " + r.name.split(" ")[0] + " anyway? Today's list will show it as over the limit.",
+          cta: "Book anyway", run: () => this.doBook(slot, true) } });
+      }
+      this.setState(s => ({ bk: Object.assign({}, s.bk, { done: { when, owed: !!res.owed, monthly: !!res.monthly, over: !!res.over, left: res.left } }) }));
+      this.loadLive().catch(() => {});
+    }).catch(e => this.flash(e.message));
+  }
+  askCancelBooking(b, r) {
+    const when = DAYS[b.at.getDay()] + " " + b.at.getDate() + " " + MONS[b.at.getMonth()] + ", " + t12(b.at.getHours(), b.at.getMinutes());
+    this.setState({ ask: {
+      title: "Cancel " + (r ? r.name.split(" ")[0] : "this rider") + "'s session?",
+      body: when + ". The session goes back to them" + (r && r.monthly ? "." : " (on the card, or off what they owe)."),
+      cta: "Cancel the session",
+      run: () => dbReady().then(db => db.rpc("admin_cancel", { p_booking: b.id })).then(() => { this.flash("Cancelled · session given back"); return this.loadLive(); }).catch(e => this.flash(e.message))
+    } });
+  }
+  confirmLevel(p, n) {
+    dbReady().then(db => db.rpc("admin_confirm_level", { p_rider: p.id, p_level: n }))
+      .then(() => { this.flash(p.name.split(" ")[0] + " is Level " + n + " · confirmed"); return this.loadLive(); })
+      .catch(e => this.flash(e.message));
+  }
   // Blocked times are read by the rider app, so they have to be written out.
   writeBlocked(next) {
     this.setState({ blocked: next });
@@ -2049,6 +2217,8 @@ class Component extends DCLogic {
             // the day itself decides whether ticking off is even offered.
             needsMark: b.status === "booked" && !dayIsFuture,
             futureOnly: b.status === "booked" && dayIsFuture,
+            canCancel: LIVE && b.status === "booked",
+            cancel: () => this.askCancelBooking(b, r),
             hasBrief: !!b.test,
             brief: b.test
               ? ("Has ridden before · " + (b.ability || "level not stated")
@@ -2279,13 +2449,13 @@ class Component extends DCLogic {
     }));
 
     const q = st.query.trim().toLowerCase();
-      let rows = st.riders.filter(r => !q || r.name.toLowerCase().indexOf(q) !== -1 || r.member.indexOf(q) !== -1
+      let rows = st.riders.filter(r => !q || r.name.toLowerCase().indexOf(q) !== -1 || r.member.indexOf(q) !== -1 || String(r.aliases || "").toLowerCase().indexOf(q) !== -1
         || (q.replace(/\D/g, "").length >= 3 && r.phone.indexOf(q.replace(/\D/g, "")) !== -1));
     if (st.filter === "1" || st.filter === "2" || st.filter === "3") rows = rows.filter(r => String(r.level) === st.filter);
     if (st.filter === "test") rows = rows.filter(r => dueTest.indexOf(r) !== -1);
     if (st.filter === "incomplete") rows = rows.filter(r => r.missing.length);
     if (st.filter === "off") rows = rows.filter(r => !r.active);
-    else if (st.filter === "all") rows = rows.filter(r => r.active);
+    else if (st.filter === "all" && !q) rows = rows.filter(r => r.active);
 
     const p = st.openRider ? this.rider(st.openRider) : null;
     const pDue = p ? dueTest.indexOf(p) !== -1 : false;
@@ -2474,6 +2644,78 @@ class Component extends DCLogic {
 
       sheetBlock: st.showBlock,
       openBlock: () => S({ showBlock:true }),
+      openBookDay: () => this.openBook(null, isoOf(day)),
+      ...(() => {
+        const bk = st.bk;
+        if (!bk) return { bkOpen: false };
+        const br = bk.rider ? this.rider(bk.rider) : null;
+        const first = br ? br.name.split(" ")[0] : "";
+        const out = { bkOpen: true, bkFirst: first, bkClose: () => S({ bk: null }),
+          bkPickRider: !br, bkPickTime: !!br && !bk.done, bkDone: !!(br && bk.done) };
+        out.bkTitle = br ? "Book " + br.name : "Book a rider";
+        out.bkSub = br ? (br.member || "no number") + " · Level " + br.level + (br.monthly ? " · monthly" : " · " + br.credits + " left on the card") : "Phone, WhatsApp or the desk";
+        if (!br) {
+          const qq = bk.q.trim().toLowerCase(), qd = qq.replace(/\D/g, "");
+          const list = qq.length < 2 ? [] : st.riders.filter(x => x.name.toLowerCase().indexOf(qq) !== -1
+            || String(x.aliases || "").toLowerCase().indexOf(qq) !== -1
+            || (qd.length >= 3 && (x.member.indexOf(qd) !== -1 || String(x.phone || "").indexOf(qd) !== -1)))
+            .sort((a, b) => (b.active ? 1 : 0) - (a.active ? 1 : 0)).slice(0, 8);
+          Object.assign(out, {
+            bkQuery: bk.q, bkOnQuery: e => { const v = e.target.value; this.setState(s => ({ bk: Object.assign({}, s.bk, { q: v }) })); },
+            bkRiders: list.map(x => ({ name: x.name,
+              meta: (x.member || "no number") + " · Level " + x.level + (x.levelOk === false ? " not confirmed" : "") + (x.active ? "" : " · not riding"),
+              pick: () => { this.setState(s => ({ bk: Object.assign({}, s.bk, { rider: x.id, slots: null }) })); this.loadBookSlots(x.id, bk.day); } })),
+            bkRiderHint: qq.length < 2 ? "Riders who stopped coming are here too. Not in the list? They sign up in the app first, or add them under Money."
+              : (list.length ? "" : "Nobody matches. Try the membership number or the phone.")
+          });
+          return out;
+        }
+        const slots = bk.slots || [];
+        const days = []; slots.forEach(x => { const k = isoOf(x.at); if (days.indexOf(k) === -1) days.push(k); });
+        const notes = [];
+        if (br.levelOk === false) notes.push("Level not confirmed: check it with the trainer, then set it on " + first + "'s page.");
+        if (!br.monthly && br.credits <= 0) notes.push("No sessions left on the card. The booking still goes through and the session is taken off the next card.");
+        if (!br.active) notes.push(first + " was marked as not riding. Booking marks them as riding again.");
+        Object.assign(out, {
+          bkHasNote: notes.length > 0, bkNote: notes.join(" "),
+          bkLoading: !bk.slots, bkNoSlots: !!bk.slots && !slots.some(x => isoOf(x.at) === bk.day),
+          bkDays: days.map(k => { const d = new Date(k + "T12:00:00"), on = k === bk.day;
+            return { dow: DAYS[d.getDay()].toUpperCase(), day: String(d.getDate()), mon: MONS[d.getMonth()],
+              bg: on ? "#14372B" : "#FFFFFF", fg: on ? "#FAF7F0" : "#14372B",
+              pick: () => this.setState(s => ({ bk: Object.assign({}, s.bk, { day: k }) })) }; }),
+          bkSlots: slots.filter(x => isoOf(x.at) === bk.day).map(x => {
+            const mine = st.bookings.some(b => b.rider === br.id && b.status === "booked" && b.at.getTime() === x.at.getTime());
+            const full = x.taken >= x.cap, noHorse = x.free <= 0;
+            return { time: t12(x.at.getHours(), x.at.getMinutes()),
+              note: mine ? "Already booked" : x.blocked ? "Blocked" : noHorse ? "No horse free" : full ? "Full · " + x.taken + " of " + x.cap + " · tap to book anyway" : x.taken + " of " + x.cap + " taken · tap to book",
+              noteColor: mine || x.blocked || noHorse ? "#9AA39D" : full ? "#9B3A22" : "#2E7D5B",
+              bg: mine || x.blocked || noHorse ? "rgba(20,55,43,.04)" : "#FFFFFF", border: full && !mine ? "rgba(155,58,34,.3)" : "rgba(20,55,43,.12)",
+              pick: () => {
+                if (mine || x.blocked || noHorse) return this.flash(mine ? first + " is already booked then" : x.blocked ? "That time is blocked" : "No horse is free then");
+                const when = DAYS[x.at.getDay()] + " " + x.at.getDate() + " " + MONS[x.at.getMonth()] + ", " + t12(x.at.getHours(), x.at.getMinutes());
+                S({ ask: { title: "Book " + first + " on " + when + "?",
+                  body: br.monthly ? "Monthly rider · nothing comes off a card." : br.credits > 0 ? "One session comes off the card (" + br.credits + " left)." : "No sessions left: it will be taken off the next card.",
+                  cta: "Book it", run: () => this.doBook(x, false) } });
+              } };
+          })
+        });
+        if (bk.done) {
+          const d = bk.done;
+          const msg = "Booked ✓ " + first + " — " + d.when + " at Equicare." + (d.owed ? " (This session comes off the next card.)" : "")
+            + "\n\nNext time you can book it yourself in 20 seconds: " + APP_LINK + "\nSign in with " + first + "'s name and membership number.";
+          const ph = String(br.phone || "").replace(/\D/g, "");
+          Object.assign(out, {
+            bkDoneWhen: d.when,
+            bkDoneNote: (d.monthly ? "Monthly · nothing taken off a card." : d.owed ? "No sessions were left, so this one is owed and comes off the next card." : "One session taken off the card" + (d.left !== null && d.left !== undefined ? " · " + d.left + " left." : "."))
+              + (d.over ? " Booked over the limit: Today's list shows it." : ""),
+            bkWa: ph ? "https://api.whatsapp.com/send/?phone=" + ph + "&text=" + encodeURIComponent(msg) + "&type=phone_number&app_absent=0"
+                     : "https://api.whatsapp.com/send?text=" + encodeURIComponent(msg),
+            bkAgain: () => this.setState(s => ({ bk: Object.assign({}, s.bk, { done: null }) })),
+            bkOther: () => this.setState(s => ({ bk: { rider: null, q: "", day: s.bk.day, slots: null, done: null } }))
+          });
+        }
+        return out;
+      })(),
       closeBlock: () => S({ showBlock:false }),
       blockSub: "Nobody can book a blocked time. Times with someone already booked have to be moved or cancelled first.",
       hasBlocked: (() => {
@@ -2536,14 +2778,19 @@ class Component extends DCLogic {
       linkTitle: plural(st.linkReqs.length, "rider") + " to link",
       linkRows: st.linkReqs.map(q => {
         // Same number and same birthday is the record. A typed name is only a hint.
-        const m = st.riders.find(x => x.member === q.member && x.dob === q.dob)
-          || st.riders.find(x => x.member === q.member)
-          || st.riders.find(x => x.dob === q.dob);
+        const sugg = regMatches(q, st.riders);
+        const m = sugg.length ? sugg[0].x : null;
         const drop = () => this.setState(s2 => ({ linkReqs: s2.linkReqs.filter(x => x.id !== q.id) }));
         return {
           name: q.name, meta: q.member + " · born " + prettyIso(q.dob) + " · says Level " + q.level,
           asked: q.asked,
           hasMatch: !!m, noMatch: !m,
+          sugg: sugg.map(o => ({ name: o.x.name, why: o.why.join(" · "),
+            meta: (o.x.member || "no number") + " · Level " + o.x.level + (o.x.dob ? " · born " + prettyIso(o.x.dob) : "") + (o.x.hasLogin ? " · already has the app" : ""),
+            link: () => {
+              this.queueOps([{ t:"link", new:q.id, old:o.x.id }]); drop();
+              this.flash(q.name.split(" ")[0] + " linked to " + o.x.name.split(" ")[0] + "'s record · Level " + o.x.level);
+            } })),
           matchLine: m ? "Record: " + m.name + " · Level " + m.level + " · " + m.credits + " of " + m.total + " left" : "",
           linkLabel: m ? "Link to " + m.name.split(" ")[0] + "'s record" : "",
           addLabel: "Add at Level " + q.level,
@@ -2574,7 +2821,8 @@ class Component extends DCLogic {
       noResults: rows.length === 0,
       riderRows: rows.map(r => ({
         name: r.name, initials: initialsOf(r.name),
-        meta: r.member + " · Level " + r.level + " · " + r.credits + " left",
+        meta: (r.member || "no number") + " · Level " + r.level + (r.levelOk === false ? " not confirmed" : "")
+          + (r.monthly ? " · monthly" : " · " + r.credits + " left") + (r.active ? "" : " · not riding"),
         flagged: r.missing.length > 0 || dueTest.indexOf(r) !== -1,
         open: () => S({ openRider: r.id })
       })),
@@ -2582,7 +2830,14 @@ class Component extends DCLogic {
       sheetRider: !!p,
       closeRider: () => S({ openRider:null }),
       pName: p ? p.name : "",
-      pMeta: p ? p.member + " · age " + ageOf(p.dob) + " · " + p.lessons + " lessons done" : "",
+      pMeta: p ? (p.member || "no number") + (p.dob ? " · age " + ageOf(p.dob) : "") + " · " + p.lessons + " lessons done"
+        + (p.monthly ? " · monthly (Level 4)" : "") + (p.owed ? " · " + p.owed + " owed" : "") + (p.active ? "" : " · not riding") : "",
+      pLevelUnsure: !!(p && p.levelOk === false),
+      pBook: () => { if (p) this.openBook(p.id, null); },
+      pUpcoming: p ? st.bookings.filter(b => b.rider === p.id && b.status === "booked" && b.at.getTime() > NOW.getTime() - 1800000)
+        .sort((a, b) => a.at - b.at).slice(0, 6).map(b => ({
+          when: DAYS[b.at.getDay()] + " " + b.at.getDate() + " " + MONS[b.at.getMonth()] + " · " + t12(b.at.getHours(), b.at.getMinutes()),
+          cancel: () => this.askCancelBooking(b, p) })) : [],
       ...(() => {
         const u = p ? st.promoUses.filter(x => x.member === p.member && !x.void)[0] : null;
         return { pHasPromo: !!u, pPromoTag: !u ? "" : u.code + " · " + (u.applied ? "used" : promoWords(u) + " waiting") };
@@ -2592,7 +2847,9 @@ class Component extends DCLogic {
       pLevels: [1,2,3].map(n => ({
         n,
         set: () => {
-          if (!p || p.level === n) return;
+          if (!p) return;
+          if (LIVE && p.levelOk === false) return this.confirmLevel(p, n);
+          if (p.level === n) return;
           const up = n > p.level, from = p.level, was = { level: p.level, lessons: p.lessons };
           S({ ask: {
             title: up ? "Move " + p.name + " up to Level " + n + "?" : "Move " + p.name + " down to Level " + n + "?",
@@ -2628,10 +2885,10 @@ class Component extends DCLogic {
       onPTrainer: e => { const v = e.target.value; if (p) this.patch(p.id, () => ({ trainer: v })); },
       trainerOptions: st.trainers,
       pDetails: p ? [
-        { k:"Date of birth", v:(() => { const d = new Date(p.dob); return d.getDate() + " " + MONS[d.getMonth()] + " " + d.getFullYear(); })(), color:"#14372B" },
+        { k:"Date of birth", v:(() => { if (!p.dob) return "Not on file"; const d = new Date(p.dob); return d.getDate() + " " + MONS[d.getMonth()] + " " + d.getFullYear(); })(), color:"#14372B" },
         { k:"Lessons at this level", v:String(p.lessons), color:"#14372B" },
         { k:"Lessons in total", v:String(p.lifetime || p.lessons), color:"#14372B" },
-        { k:"Last ride", v:(() => { const d = new Date(p.lastRide); return d.getDate() + " " + MONS[d.getMonth()]; })(), color:"#14372B" },
+        { k:"Last ride", v:(() => { if (!p.lastRide) return "—"; const d = new Date(p.lastRide); return d.getDate() + " " + MONS[d.getMonth()]; })(), color:"#14372B" },
         { k:"Status", v:p.active ? "Riding" : "Not riding", color:p.active ? "#2E7D5B" : "#9B3A22" },
         { k:"With Equicare since", v:(p.since ? prettyIso(p.since) + " · " + tenureWords(p.since) : "—"), color:"#14372B" },
         { k:"Waiver", v:(p.waiverOn ? "Signed " + prettyIso(p.waiverOn) : "Signed"), color:"#2E7D5B" }
@@ -2643,7 +2900,7 @@ class Component extends DCLogic {
       validityDays: st.rules.validity,
       pExpiryLabel: p ? (p.expires ? "Expires " + prettyIso(p.expires) : "No card yet") : "",
       pExpiryState: (() => {
-        if (!p) return "";
+        if (!p || !p.expires) return "";
         const d = daysLeftIso(p.expires);
         if (d < 0) return "Expired";
         if (d === 0) return "Today";
@@ -2680,7 +2937,7 @@ class Component extends DCLogic {
       applyExtDate: () => {
         if (!p) return;
         if (!st.extDate) return this.flash("Pick a date first");
-        const why = st.extReason === "Other" ? st.extOther.trim() : st.extReason;
+        const why = !p.expires ? "From the paper card" : (st.extReason === "Other" ? st.extOther.trim() : st.extReason);
         if (!why) return this.flash("Write the reason first");
         const d = new Date(st.extDate);
         if (isNaN(d.getTime())) return this.flash("Pick a real date");
@@ -2746,7 +3003,8 @@ class Component extends DCLogic {
           this.flash(c.sessions + " sessions added for " + r.name + (u ? " · " + u.code : ""));
         };
         return {
-          name: r ? r.name : "", meta: "Level " + pm.level + " · " + pc.sessions + " sessions" + (promo ? " · " + promo.code + " " + promoWords(promo) : ""),
+          name: r ? r.name : "", meta: "Level " + pm.level + " · " + pc.sessions + " sessions" + (promo ? " · " + promo.code + " " + promoWords(promo) : "")
+            + (r && r.levelOk === false ? " · LEVEL NOT CONFIRMED: set it on the rider's page first" : ""),
           amount: pc.price.toLocaleString() + " EGP", method: pm.method,
           approve: () => {
             if (!others.length) return credit();

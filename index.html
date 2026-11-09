@@ -46,10 +46,16 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
       </div>
       <sc-if value="{{ loginRider }}" hint-placeholder-val="{{ true }}">
       <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Rider's full name</label>
+        <input data-field="rname" value="{{ loginRname }}" onChange="{{ onLoginField }}" sc-camel-auto-capitalize="words" sc-camel-auto-correct="off" sc-camel-spell-check="{{ false }}" placeholder="First and last name" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:999px;padding:15px 20px;font-size:16px;color:#14372B">
+        <span style="font-size:12px;color:#5E6B63">Small spelling differences are fine.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
         <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Membership number</label>
         <input data-field="memberId" value="{{ loginId }}" onChange="{{ onLoginField }}" sc-camel-auto-capitalize="none" sc-camel-auto-correct="off" sc-camel-spell-check="{{ false }}" sc-camel-input-mode="numeric" placeholder="26604/1" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:999px;padding:15px 20px;font-size:16px;color:#14372B">
         <span style="font-size:12px;color:#5E6B63">Numbers only — the slash appears on its own.</span>
       </div>
+      <sc-if value="{{ askDob }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:6px">
         <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Rider's date of birth</label>
         <div style="display:flex;gap:6px">
@@ -58,6 +64,7 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
           <select data-part="y" value="{{ lgDobY }}" onChange="{{ onLgDobPart }}" style="flex:1;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:999px;padding:15px 10px;font-size:15px;color:#14372B"><option value="">Year</option><sc-for list="{{ dobYearOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
         </div>
       </div>
+      </sc-if>
       </sc-if>
       <sc-if value="{{ loginStaff }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:6px">
@@ -148,7 +155,7 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
           <div style="display:flex;flex-direction:column;gap:6px">
             <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Membership number</label>
             <input data-field="memberId" value="{{ suMemberId }}" onChange="{{ onSuField }}" sc-camel-input-mode="numeric" placeholder="26604/1" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:15px;color:#14372B">
-            <span style="font-size:12px;color:#5E6B63">Numbers only, in the club's format — digits, a slash, then your family suffix, as on your membership card.</span>
+            <span style="font-size:12px;color:#5E6B63">As on the membership card, like 26604/1. If you are not sure of the part after the slash, leave it out.</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px">
             <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">School or university</label>
@@ -414,6 +421,32 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
               </div>
             </sc-if>
           </div>
+          </sc-if>
+
+          <sc-if value="{{ needsPhone }}" hint-placeholder-val="{{ false }}">
+            <div style="background:rgba(201,162,74,.16);border:1px solid rgba(201,162,74,.45);border-radius:20px;padding:15px 17px;display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:14px;color:#14372B;font-weight:600">Add your mobile number</span>
+              <span style="font-size:12px;color:#3E4C44;line-height:1.55">So Equicare can reach you about your sessions. It takes 10 seconds.</span>
+              <button onClick="{{ openPhoneEdit }}" style="border:none;background:#14372B;color:#FAF7F0;font-size:14px;font-weight:600;padding:12px;border-radius:999px;cursor:pointer">Add it now</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showMonthly }}" hint-placeholder-val="{{ false }}">
+            <div ref="{{ cardRef }}" style="background:#FFFFFF;border:1px solid rgba(201,162,74,.5);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:9px;box-shadow:0 4px 14px rgba(20,55,43,.05)">
+              <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5E6B63">Your riding</span>
+              <span style="font-family:Marcellus,serif;font-size:21px;color:#14372B;line-height:1.25">Monthly</span>
+              <span style="font-size:13px;color:#3E4C44;line-height:1.6">Equicare books your sessions with you on WhatsApp. They appear below under Next session.</span>
+              <a href="{{ waHref }}" target="_blank" rel="noopener" style="text-decoration:none"><div style="border:1px solid rgba(20,55,43,.2);color:#14372B;font-size:14px;font-weight:600;padding:12px;border-radius:999px;text-align:center">Message Equicare</div></a>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showWelcomeBack }}" hint-placeholder-val="{{ false }}">
+            <div ref="{{ cardRef }}" style="background:#FFFFFF;border:1px solid rgba(201,162,74,.5);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:9px;box-shadow:0 4px 14px rgba(20,55,43,.05)">
+              <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5E6B63">Welcome back</span>
+              <span style="font-family:Marcellus,serif;font-size:21px;color:#14372B;line-height:1.25">{{ backTitle }}</span>
+              <span style="font-size:13px;color:#3E4C44;line-height:1.6">{{ backLine }}</span>
+              <a href="{{ waBack }}" target="_blank" rel="noopener" style="text-decoration:none"><div style="background:#14372B;color:#FAF7F0;font-size:15px;font-weight:600;padding:14px;border-radius:999px;text-align:center">Message Equicare</div></a>
+            </div>
           </sc-if>
 
           <sc-if value="{{ levelPending }}" hint-placeholder-val="{{ false }}">
@@ -1402,7 +1435,8 @@ function endOfDay(iso) { if (!iso) return null; const p = String(iso).slice(0, 1
 function phoneShow(d) { const x = String(d || "").replace(/\D/g, ""); if (!x) return ""; return x.indexOf("20") === 0 ? "+20 " + x.slice(2) : "+" + x; }
 function mapRider(x) {
   const c = x.card, lv = LEVELS[x.level] || LEVELS[1];
-  return { id:x.id, name:x.name, member:x.member, level:x.level, dob:String(x.dob || "").slice(0, 10),
+  return { id:x.id, name:x.name, member:x.member || "", level:x.level, dob:String(x.dob || "").slice(0, 10),
+    monthly: !!x.monthly, levelOk: x.level_confirmed !== false, imported: !!x.imported,
     credits: c ? c.left : 0, total: c ? c.total : lv.card,
     expires: c && c.expires ? prettyDate(c.expires) : "—", expiresOn: c && c.expires ? endOfDay(c.expires) : null,
     owed: x.owed || 0, trainer: x.trainer || "To be assigned", guardian: x.guardian || "", phone: phoneShow(x.phone),
@@ -1456,7 +1490,7 @@ const TOUR = [
 ];
 
 const HELP = [
-  { q:"How do I sign in?", a:"• Type the membership number, like 26604/1\n• Pick the rider's date of birth\n\nYour name is not needed to sign in. If it does not work, tap Trouble signing in." },
+  { q:"How do I sign in?", a:"• Type the rider's name\n• Type the membership number, like 26604/1\n\nSmall spelling differences are fine. If the name still is not recognised, the app asks for the date of birth instead." },
   { q:"I already ride at Equicare. Do I need the free test?", a:"No. When you create your account, pick I already ride at Equicare and choose your level. Equicare links your record and adds the sessions you have left, usually the same day." },
   { q:"How do I book a session?", a:"• Open Book and pick a day\n• Pick a free time\n• Check the details and confirm\n• One session comes off your card\n\nOnly the days your level rides are shown.",  img:"assets/help/book.jpg", ratio:"0.8519", imgH:"100.00%", top:"0.00%", shot:"The Book tab with a time selected" },
   { q:"How do I cancel and get my session back?", a:"• Open Sessions and find the booking\n• Tap Cancel\n\nMore than 24 hours ahead: the session goes straight back on your card.\n\nInside 24 hours: the button is gone and the session is counted — the horses are already assigned.",  img:"assets/help/sessions.jpg", ratio:"2.1395", imgH:"490.91%", top:"-51.16%", shot:"A session card with the cancel button" },
@@ -1556,7 +1590,7 @@ function maskMember(v) {
   // numeric keypad alone is enough to enter 26604/1.
   return s.length > 5 ? s.slice(0, 5) + "/" + s.slice(5, 7) : s;
 }
-function memberOk(v) { return /^\d{3,6}\/\d{1,2}$/.test(String(v || "").trim()); }
+function memberOk(v) { return /^\d{3,7}(\/\d{1,2})?$/.test(String(v || "").trim()); }
 function phoneOk(cc, v) {
   const d = String(v || "").replace(/\D/g, "");
   if (!d) return false;
@@ -2011,7 +2045,7 @@ class Component extends DCLogic {
     const next = upcoming[0];
 
     const whenLabel = d => DAY_NAMES[d.getDay()] + " " + d.getDate() + " " + MON_NAMES[d.getMonth()] + " · " + fmtTime(d.getHours(), d.getMinutes());
-    const age = Math.floor((NOW - new Date(r.dob)) / 31557600000);
+    const age = r.dob ? Math.floor((NOW - new Date(r.dob)) / 31557600000) : "—";
 
     const chip = { booked:["rgba(46,125,91,.12)","#2E7D5B","Booked"], attended:["rgba(20,55,43,.08)","#14372B","Attended"], no_show:["rgba(155,58,34,.1)","#9B3A22","No-show"], cancelled:["rgba(20,55,43,.06)","#5E6B63","Cancelled"] };
 
@@ -2069,14 +2103,14 @@ class Component extends DCLogic {
       const su = st.su;
       if (st.step === 1) {
         if (!su.name || !su.dob || !su.memberId) return S({ suErr:"Name, date of birth and membership number are required." });
-        if (!memberOk(su.memberId)) return S({ suErr:"Membership number must be digits, a slash, then the suffix — like 26604/1." });
+        if (!memberOk(su.memberId)) return S({ suErr:"Write the membership number, like 26604/1. The part after the slash can be left out." });
         const a = Math.floor((NOW - new Date(su.dob)) / 31557600000);
         if (a < 7) return S({ suErr:"Riders must be at least 7 years old to start." });
         const num = su.memberId.trim();
         if (LIVE) {
           if (st.claimed) return S({ step:3, suErr:"" });
           return this.liveDo(async db => {
-            const k = await db.rpc("peek_rider", { p_member: num, p_dob: su.dob });
+            const k = await db.rpc("peek_rider", { p_member: num, p_dob: su.dob, p_name: su.name });
             if (!k.found) return S({ step:2, suErr:"" });
             if (!k.dob_ok) return S({ suErr:"That number is in our register under a different date of birth. Check it, or message Equicare." });
             if (k.linked) return S({ suErr:"This rider already has an account. Go back and sign in with the membership number and date of birth." });
@@ -2253,6 +2287,7 @@ class Component extends DCLogic {
       isLogin: st.screen === "login", isSignup: st.screen === "signup", isApp: st.screen === "app",
       isHome: st.tab === "home", isBook: st.tab === "book", isSessions: st.tab === "sessions", isProfile: st.tab === "profile",
 
+      loginRname: st.login.rname || "", askDob: !!st.askDob,
       loginId: st.login.memberId, loginName: st.login.name, loginPin: st.login.pin,
       loginRider: !st.loginStaff, loginStaff: st.loginStaff,
       staffToggleLabel: st.loginStaff ? "Rider sign in" : "Staff sign in",
@@ -2285,12 +2320,12 @@ class Component extends DCLogic {
         S({ fgName: hit.name, fgErr:"" });
       },
       fgUse: () => {
-        S({ forgot:false, loginErr:"", login:{ name: st.fgName, memberId: st.fgMember.trim(), dob: st.fgDob, pin:"" },
+        S({ forgot:false, loginErr:"", askDob:true, login:{ name:"", rname: st.fgName, memberId: st.fgMember.trim(), dob: st.fgDob, pin:"" },
           dobP: Object.assign({}, st.dobP, { lg: dobSplit(st.fgDob) }) });
         this.flash("Name filled in — tap Sign in");
       },
       openInstagram: () => { try { window.open(INSTAGRAM, "_blank", "noopener"); } catch (e) {} },
-      onLoginField: e => { const f = e.target.dataset.field; let v = e.target.value; if (f === "memberId") v = maskMember(v); this.setState(s => ({ login: Object.assign({}, s.login, { [f]: v }) })); },
+      onLoginField: e => { const f = e.target.dataset.field; let v = e.target.value; if (f === "memberId") v = maskMember(v); this.setState(s => ({ login: Object.assign({}, s.login, { [f]: v }), askDob: f === "memberId" ? false : s.askDob, loginErr: f === "memberId" ? "" : s.loginErr })); },
       doLogin: () => {
         // Staff have their own small form behind the link under Sign in.
         if (st.loginStaff) {
@@ -2315,10 +2350,26 @@ class Component extends DCLogic {
         // by how the name is typed, which is the part people get wrong.
         const id = String(st.login.memberId || "").trim();
         const dob = st.login.dob;
-        if (!id || !dob) return S({ loginErr:"Enter the membership number and the rider's date of birth." });
-        if (!memberOk(id)) return S({ loginErr:"Membership number must be digits, a slash, then the suffix — like 26604/1." });
+        const rname = String(st.login.rname || "").trim();
+        // Name and number first. If the name does not match closely enough,
+        // the date of birth is asked instead, so a spelling never locks anyone out.
+        if (!rname || !id) return S({ loginErr:"Enter the rider's name and membership number." });
+        if (!memberOk(id)) return S({ loginErr:"Write the membership number, like 26604/1. The part after the slash can be left out." });
+        if (st.askDob && !dob) return S({ loginErr:"Pick the rider's date of birth." });
+        const noName = "We couldn't match that name to this number. Pick the rider's date of birth instead.";
+        if (!LIVE && !st.askDob) {
+          const k = st.riders.find(x => x.member === id);
+          if (!k) return S({ loginErr:"We cannot find that membership number. Check it, or create an account." });
+          const a = nameKey(rname).split(" ")[0], b = nameKey(k.name).split(" ")[0];
+          if (a !== b && nameKey(rname) !== nameKey(k.name)) return S({ askDob:true, loginErr: noName });
+          return this.setState(s2 => ({ login: Object.assign({}, s2.login, { dob: k.dob }) }), () => this.renderVals().doLogin());
+        }
         if (LIVE) return this.liveDo(async db => {
-          const res = await db.rpc("sign_in_rider", { p_member: id, p_dob: dob });
+          const res = st.askDob
+            ? await db.rpc("sign_in_rider", { p_member: id, p_dob: dob })
+            : await db.rpc("sign_in_by_name", { p_member: id, p_name: rname });
+          if (res && res.error === "name") return S({ askDob:true, loginErr: noName });
+          if (res && res.error === "busy") return S({ loginErr:"Too many tries. Wait 15 minutes, or tap Trouble signing in." });
           if (res && res.error === "unknown") return S({ loginErr:"We cannot find that membership number. Check it, or create an account." });
           if (res && res.error === "dob") return S({ loginErr:"That date of birth does not match this membership number. Check it, or tap Trouble signing in." });
           try {
@@ -2457,7 +2508,7 @@ class Component extends DCLogic {
         return d.getMonth() === NOW.getMonth() && d.getDate() === NOW.getDate();
       })(),
       birthdayNote: "You are " + age + " today. From everyone at Equicare — enjoy the ride.",
-      useDemo: () => this.setState(s => ({ loginStaff:false, loginErr:"", login:{ name:"", memberId:"26604/1", dob:"2009-09-29", pin:"" },
+      useDemo: () => this.setState(s => ({ loginStaff:false, loginErr:"", askDob:false, login:{ name:"", rname:"Yassin Haitham", memberId:"26604/1", dob:"2009-09-29", pin:"" },
         dobP: Object.assign({}, s.dobP, { lg: dobSplit("2009-09-29") }) })),
       goSignup: () => S({ screen:"signup", step:1, suErr:"", su: freshSu(), claim:null, claimed:null,
         promoPick:null, promoOpen:false, promoInput:"", promoErr:"",
@@ -2520,11 +2571,19 @@ class Component extends DCLogic {
 
       greeting: hour < 12 ? "Good morning" : (hour < 17 ? "Good afternoon" : "Good evening"),
       firstName: r.name.split(" ")[0], riderName: r.name, initials: r.name.split(" ").map(p => p[0]).join("").slice(0,2),
-      memberNo: r.member, level: r.level, age,
-      levelKnown: !needsTest, levelPending: needsTest,
+      memberNo: r.member || "—", level: r.level, age,
+      levelKnown: !needsTest && !(r.monthly && !hasCard) && !((r.levelOk === false || r.imported) && firstCard), levelPending: needsTest,
       levelText: needsTest ? "Level pending" : "Level " + r.level,
       showCard: !needsTest && hasCard && !r.linkPending,
-      showBuyFirst: !needsTest && firstCard && !r.linkPending,
+      showBuyFirst: !needsTest && firstCard && !r.linkPending && !r.monthly && r.levelOk !== false && !r.imported,
+      showMonthly: !!r.monthly && !hasCard,
+      showWelcomeBack: !needsTest && firstCard && !r.linkPending && !r.monthly && (r.levelOk === false || r.imported),
+      backTitle: r.levelOk === false ? "We confirm your level first" : "Your card is on its way",
+      backLine: r.levelOk === false
+        ? "You are on Equicare's register. Send us a message and we confirm your level and your card, then booking opens here."
+        : "Equicare is putting in the sessions left on your paper card. Booking opens here as soon as it is in. Until then, message us to book.",
+      needsPhone: LIVE && r.id !== "none" && !String(r.phone || "").replace(/\D/g, ""),
+      waBack: waLink(st.waDigits, "Hello Equicare, this is " + r.name + (r.member ? " (member " + r.member + ")" : "") + ". I would like to ride again. Which level and card?"),
       linkPending: !!r.linkPending,
       linkLine: "You told us you ride Level " + r.level + ". Equicare is matching you to your record, and your sessions left appear here once it is done — usually the same day.",
       firstCardLine: cfg.label + " · " + (cfg.card + promoExtra) + " sessions · " + payPrice.toLocaleString() + " EGP",
@@ -2767,7 +2826,7 @@ class Component extends DCLogic {
         const id = String(st.addMember || "").trim();
         if (!name) return S({ addErr:"Write the rider's full name." });
         if (name.split(" ").filter(Boolean).length < 2) return S({ addErr:"Give both first and last name, as written on the application." });
-        if (!memberOk(id)) return S({ addErr:"Membership number must be digits, a slash, then the suffix — like 31042/2." });
+        if (!memberOk(id)) return S({ addErr:"Write the membership number, like 31042/2. The part after the slash can be left out." });
         if (!st.addDob) return S({ addErr:"Enter the rider's date of birth." });
         if (st.riders.some(x => x.member === id)) return S({ addErr:"That rider is already on this account." });
         if (!LIVE && TAKEN.indexOf(id) !== -1) return S({ addErr:"That membership number is already linked to another account. Equicare can move it if it belongs to you." });
@@ -2954,7 +3013,7 @@ class Component extends DCLogic {
         : r.level === 1
         ? (r.lessonsDone >= 25 ? "Eligible to test for Level 2 — ask the admin to schedule it." : (25 - r.lessonsDone) + " more lessons before the Level 2 test.")
         : (r.lessonsDone >= 24 ? "Eligible to test for Level 3." : (24 - r.lessonsDone) + " more lessons before the Level 3 test."),
-      dobLabel: (() => { const d = new Date(r.dob); return d.getDate() + " " + MON_NAMES[d.getMonth()] + " " + d.getFullYear(); })(),
+      dobLabel: (() => { if (!r.dob) return "Not on file"; const d = new Date(r.dob); return d.getDate() + " " + MON_NAMES[d.getMonth()] + " " + d.getFullYear(); })(),
       guardianName: r.guardian, waiverDate: r.waiver, assignedTrainer: r.trainer,
       countryOptions: COUNTRIES,
       phoneLabel: r.phone,
@@ -3020,7 +3079,7 @@ class Component extends DCLogic {
         try { window.localStorage.removeItem("equicare.session"); } catch (e) {}
         if (LIVE) { dbReady().then(db => db.signOut()); this.setState({ riders: [], bookings: [], promoUses: [], activeRider:"none", avail:{}, availFor:null }); }
         // Nothing from one rider's sign-up may survive into the next one's.
-        S({ screen:"login", tab:"home", login:{ name:"", memberId:"", dob:"", pin:"" }, loginStaff:false,
+        S({ screen:"login", tab:"home", login:{ name:"", rname:"", memberId:"", dob:"", pin:"" }, loginStaff:false, askDob:false,
           dobP: Object.assign({}, st.dobP, { lg:{ d:"", m:"", y:"" } }),
           step:1, suErr:"", su: freshSu(), claim:null, claimed:null,
           promoPick:null, promoOpen:false, promoInput:"", promoErr:"",
