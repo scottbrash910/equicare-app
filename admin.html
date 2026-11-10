@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<script>/* iPhone: after the keyboard closes, Safari can leave the page pushed up a little. Put it back. */addEventListener("focusout",()=>setTimeout(()=>{const a=document.activeElement;if(!a||!/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){if(window.scrollY||document.documentElement.scrollTop)window.scrollTo(0,0);}},120));</script>
 <script src="./support.js"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#14372B">
@@ -19,7 +20,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="ar.js"></script>
 <style>
-body{margin:0;background:#EDE7DA;height:100%;overflow:hidden;overscroll-behavior:none;}html{height:100%;}
+body{margin:0;background:#EDE7DA;height:100%;overflow:hidden;overscroll-behavior:none;}html{height:100%;overflow:hidden;overscroll-behavior:none;}
 a{color:#14372B;} a:hover{color:#8A6A22;}
 *{box-sizing:border-box;}
 input,button,select,textarea{font-family:Figtree,system-ui,sans-serif;}
@@ -3491,7 +3492,7 @@ class Component extends DCLogic {
         const ok = t && m <= 15;
         return {
           calDot: ok ? "#2E7D4F" : (t ? "#B5651D" : "#9AA39D"),
-          calNote: !t ? "Not connected yet" : (m < 1 ? "Up to date · just now" : m < 60 ? "Up to date · " + m + " min ago" : "Last update " + new Date(t).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" }) + " · check the Google script")
+          calNote: !t ? "Not connected yet" : ok ? (m < 1 ? "Up to date · just now" : "Up to date · " + m + " min ago") : "Last update " + (m < 60 ? m + " min ago" : new Date(t).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" })) + " · check the Google script"
         };
       })(),
       pinNew: st.pinNew,
