@@ -1,4 +1,4 @@
-const CACHE = "equicare-v35";
+const CACHE = "equicare-v36";
 const SHELL = ["index.html", "admin.html", "support.js", "ar.js", "eqdb.js", "manifest.json",
   "assets/equicare-crest.png", "assets/equicare-wordmark.png", "assets/gsc-mark.png",
   "icon-180.png", "icon-192.png", "icon-512.png"];
@@ -25,6 +25,7 @@ self.addEventListener("fetch", e => {
   // Videos stream straight from the network, never cached, so they cost
   // nothing until someone presses play.
   if (/\.(mp4|webm|mov)$/i.test(url.pathname)) return;
+  if (sameOrigin && url.pathname.startsWith("/api/")) return;
 
   // Pages: always try the network first so a redeploy lands immediately and a
   // navigation can never be served a stale or wrong document. Cache is the
@@ -47,4 +48,24 @@ self.addEventListener("fetch", e => {
     }).catch(() => hit);
     return hit || net;
   })));
+});
+
+// Lesson reminders, sent by api/push.js. Every push must show a notification.
+self.addEventListener("push", e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (x) { d = { body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "Equicare", {
+    body: d.body || "", icon: "icon-192.png", badge: "icon-192.png",
+    tag: d.tag || "equicare", renotify: true, data: { url: d.url || "./index.html" }
+  }));
+});
+
+// Tapping the reminder opens the rider app, or brings it to the front.
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || "./index.html", self.registration.scope).href;
+  e.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then(ws => {
+    for (const w of ws) if (w.url.startsWith(self.registration.scope) && !/admin/.test(w.url) && "focus" in w) return w.focus();
+    return clients.openWindow(url);
+  }));
 });

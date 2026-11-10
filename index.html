@@ -437,6 +437,26 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
             </div>
           </sc-if>
 
+          <sc-if value="{{ pushAsk }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:20px;padding:16px 17px;display:flex;flex-direction:column;gap:13px;box-shadow:0 4px 14px rgba(20,55,43,.05)">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:none;width:36px;height:36px;border-radius:999px;background:rgba(201,162,74,.16);color:#8A6A22;display:flex;align-items:center;justify-content:center">
+                  <svg width="19" height="19" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" sc-camel-stroke-width="1.6" sc-camel-stroke-linecap="round" sc-camel-stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9"></path><path d="M10.3 20a1.9 1.9 0 0 0 3.4 0"></path></svg>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">
+                  <span style="font-size:14px;color:#14372B;font-weight:600">{{ pushTitle }}</span>
+                  <span style="font-size:12px;color:#3E4C44;line-height:1.5">{{ pushLine }}</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <sc-if value="{{ pushCanTurnOn }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ pushOn }}" style="flex:1;border:none;background:#14372B;color:#FAF7F0;font-size:14px;font-weight:600;padding:12px;border-radius:999px;cursor:pointer" style-hover="background:#0F2A20">{{ pushBtn }}</button>
+                </sc-if>
+                <button onClick="{{ pushLater }}" style="flex:none;white-space:nowrap;border:1px solid rgba(20,55,43,.2);background:transparent;color:#5E6B63;font-size:14px;font-weight:500;padding:12px 16px;border-radius:999px;cursor:pointer">Not now</button>
+              </div>
+            </div>
+          </sc-if>
+
           <sc-if value="{{ showMonthly }}" hint-placeholder-val="{{ false }}">
             <div ref="{{ cardRef }}" style="background:#FFFFFF;border:1px solid rgba(201,162,74,.5);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:9px;box-shadow:0 4px 14px rgba(20,55,43,.05)">
               <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5E6B63">Your riding</span>
@@ -1502,6 +1522,61 @@ const LIVE = !/[?&]demo\b/.test(location.search);
 let NOW = LIVE ? new Date() : new Date(2026, 8, 12, 15, 30);
 const ADMIN_URL = /\.dc\.html/i.test(location.pathname) ? "Equicare Admin.dc.html" : "admin.html";
 const dbReady = () => new Promise(res => { const t = () => window.EQDB ? res(window.EQDB) : setTimeout(t, 30); t(); });
+// Lesson reminders. The database queues one 1 hour before each booked lesson
+// and api/push.js sends it. On iPhone this only works once the app has been
+// added to the Home Screen (iOS 16.4 or newer).
+const PUSH = (() => {
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const standalone = () => (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  const can = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  const toKey = s => { const r = atob((s + "=".repeat((4 - s.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(r, c => c.charCodeAt(0)); };
+  const fromKey = b => b ? btoa(String.fromCharCode.apply(null, new Uint8Array(b))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "") : "";
+  let saved = false;
+  const save = async sub => {
+    const j = sub.toJSON(), db = await dbReady();
+    await db.rpc("save_push", { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_ua: navigator.userAgent });
+    saved = true;
+  };
+  const current = async () => { const reg = await navigator.serviceWorker.getRegistration(); return reg ? reg.pushManager.getSubscription() : null; };
+  return {
+    // "on", "off", "install" (iPhone not on the Home Screen yet), "denied", or "none" (this phone cannot)
+    async mode() {
+      if (!LIVE) return "none";
+      if (!can()) return ios && !standalone() ? "install" : "none";
+      if (Notification.permission === "denied") return "denied";
+      const sub = await current();
+      if (sub && Notification.permission === "granted") {
+        if (!saved) save(sub).catch(() => {});   // keeps it tied to whoever is signed in
+        return "on";
+      }
+      return "off";
+    },
+    // Must run straight from a tap: iPhones only ask for permission then.
+    async turnOn() {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") return perm === "denied" ? "denied" : "off";
+      const db = await dbReady();
+      const key = await db.rpc("push_public_key");
+      if (!key) throw new Error("Reminders are not ready yet. Try again in a few minutes.");
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (sub && fromKey(sub.options && sub.options.applicationServerKey) !== key) { await sub.unsubscribe().catch(() => {}); sub = null; }
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toKey(key) });
+      await save(sub);
+      reg.showNotification("Reminders are on", { body: "We will remind you 1 hour before each lesson.", icon: "icon-192.png", tag: "equicare-on" }).catch(() => {});
+      return "on";
+    },
+    // Signing out: this phone stops getting the last rider's reminders.
+    async off() {
+      if (!LIVE || !can()) return;
+      const sub = await current();
+      if (!sub) return;
+      try { const db = await dbReady(); await db.rpc("drop_push", { p_endpoint: sub.endpoint }); } catch (e) {}
+      await sub.unsubscribe().catch(() => {});
+      saved = false;
+    }
+  };
+})();
 const NOBODY = { id:"none", name:"", member:"", level:1, dob:"2000-01-01", credits:0, total:5, expires:"—", expiresOn:null, owed:0,
   trainer:"", guardian:"", phone:"", waiver:"", testDone:true, appCreated:true, lessonsDone:0, lifetime:0 };
 function prettyDate(iso) { if (!iso) return "—"; const p = String(iso).slice(0, 10).split("-"); return parseInt(p[2], 10) + " " + MON_NAMES[parseInt(p[1], 10) - 1] + " " + p[0]; }
@@ -1842,6 +1917,7 @@ class Component extends DCLogic {
       help: false, helpOpenId: null, docsOpen: false, detailsOpen: false, historyOpen: false, confetti: false,
       addRider: false, addName: "", addMember: "", addDob: "", addErr: "", addRidden: "",
       avail: {}, availFor: null, busy: false,
+      pushMode: "none", pushBusy: false, pushSnooze: (() => { try { return Date.now() - Number(window.localStorage.getItem("equicare.pushLater") || 0) < 5 * 86400000; } catch (e) { return false; } })(),
       moveReq: LIVE ? null : { id:"m1", booking:"b1", to:new Date(2026,8,15,19,0), asked:new Date(2026,8,12,13,10), hours:6, state:"open" }
     };
   }
@@ -1969,6 +2045,7 @@ class Component extends DCLogic {
     const db = await dbReady();
     const d = await db.rpc("my_data");
     this._lastLoad = Date.now();
+    PUSH.mode().then(m => { if (m !== this.state.pushMode) this.setState({ pushMode: m }); }).catch(() => {});
     if (d.levels) Object.keys(d.levels).forEach(k => {
       const L = d.levels[k];
       LEVELS[k] = Object.assign({}, LEVELS[k] || {}, { days: L.days, start: Math.floor(L.start), end: Math.ceil(L.end),
@@ -2700,6 +2777,30 @@ class Component extends DCLogic {
         const first = r.name.split(" ")[0];
         return {
           pfMissing: miss.length > 0 && !r.linkPending,
+          pushAsk: LIVE && !st.pushSnooze && (st.pushMode === "off" || st.pushMode === "install"),
+          pushCanTurnOn: st.pushMode === "off",
+          pushTitle: st.pushMode === "install" ? "Get a reminder before each lesson" : "Turn on lesson reminders",
+          pushLine: st.pushMode === "install"
+            ? "On iPhone: tap Share, then Add to Home Screen. Open Equicare from the Home Screen and turn reminders on there."
+            : "We will send a reminder to this phone 1 hour before each lesson.",
+          pushBtn: st.pushBusy ? "Turning on…" : "Turn on reminders",
+          pushOn: () => {
+            if (st.pushBusy) return;
+            S({ pushBusy: true });
+            PUSH.turnOn().then(m => {
+              this.setState({ pushMode: m, pushBusy: false });
+              if (m === "on") this.flash("Reminders on · 1 hour before each lesson");
+              else this.flash(m === "denied" ? "Reminders are blocked. Allow notifications for Equicare in the phone's settings." : "Reminders stay off for now");
+            }).catch(e => {
+              this.setState({ pushBusy: false });
+              const m = (e && e.message) || "";
+              this.flash(/not ready|connection/i.test(m) ? m : "This phone could not turn reminders on. Close the app, open it again and try once more. Private windows cannot get reminders.");
+            });
+          },
+          pushLater: () => {
+            try { window.localStorage.setItem("equicare.pushLater", String(Date.now())); } catch (e) {}
+            S({ pushSnooze: true });
+          },
           pfBannerTitle: miss.length === 1 ? "1 detail missing" : miss.length + " details missing",
           pfBannerLine: "Equicare's file has no " + say(list) + " for " + first + ".",
           openPf: () => this.openProfile(false),
@@ -3265,7 +3366,7 @@ class Component extends DCLogic {
       },
       logout: () => {
         try { window.localStorage.removeItem("equicare.session"); } catch (e) {}
-        if (LIVE) { dbReady().then(db => db.signOut()); this.setState({ riders: [], bookings: [], promoUses: [], activeRider:"none", avail:{}, availFor:null }); }
+        if (LIVE) { PUSH.off().catch(() => {}).then(() => dbReady()).then(db => db.signOut()); this.setState({ pushMode: "none" }); this.setState({ riders: [], bookings: [], promoUses: [], activeRider:"none", avail:{}, availFor:null }); }
         // Nothing from one rider's sign-up may survive into the next one's.
         S({ screen:"login", tab:"home", login:{ name:"", rname:"", memberId:"", dob:"", pin:"" }, loginStaff:false, askDob:false,
           dobP: Object.assign({}, st.dobP, { lg:{ d:"", m:"", y:"" } }),
