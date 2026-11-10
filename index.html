@@ -1682,7 +1682,8 @@ const IBAN = "00061100005993"; const IBAN_PRETTY = "00061100005993";
 const PAY_BANK = "Crédit Agricole Egypt", PAY_NAME = "Khaled Assem";
 // Opens the InstaPay app if installed. A link that pre-fills the account
 // needs Equicare's own payment address from InstaPay (see PROJECT-PLAN.md).
-const INSTAPAY_LINK = "https://ipn.eg";
+// Staff paste Equicare's own InstaPay payment link in the staff app (Setup); until then no button.
+const INSTAPAY_LINK = "";
 
 const CURRICULUM = {
   1: { title:"Level 1", label:"What Level 1 covers", blurb:"Introduction to riding basics", items:[
@@ -2058,6 +2059,7 @@ class Component extends DCLogic {
       reward:r.promo.reward, value:r.promo.value, level:r.promo.level || 0, applied:false }));
     const part = Object.assign({ riders, bookings, promoUses: uses }, extra || {});
     if (d.whatsapp && /^\d{8,15}$/.test(d.whatsapp)) part.waDigits = d.whatsapp;
+    part.ipLink = /^https:\/\/ipn\.eg\/S\/\S+/i.test(String(d.instapay || "").trim()) ? String(d.instapay).trim() : "";
     if (!riders.length && part.screen === "app") delete part.screen;
     this.setState(s => {
       const want = part.activeRider || s.activeRider;
@@ -2610,9 +2612,9 @@ class Component extends DCLogic {
       renewAnyway: () => S({ renewWarn:false, pay:true, copied:false }),
       closePay: () => S({ pay:false, copied:false }),
       ibanPretty: IBAN_PRETTY, payBank: PAY_BANK, payName: PAY_NAME,
-      hasInstapayLink: !!INSTAPAY_LINK,
-      noInstapayLink: !INSTAPAY_LINK,
-      instapayLink: INSTAPAY_LINK || "#",
+      hasInstapayLink: !!(st.ipLink || INSTAPAY_LINK),
+      noInstapayLink: !(st.ipLink || INSTAPAY_LINK),
+      instapayLink: st.ipLink || INSTAPAY_LINK || "#",
       payAmount: payPrice.toLocaleString() + " EGP",
       payCardLabel: promoExtra ? cfg.label + " + " + promoExtra + " free" : cfg.label,
 
