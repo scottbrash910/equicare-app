@@ -303,6 +303,13 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Whose number is the second mobile?</label>
+            <select data-field="phone2Who" value="{{ suPhone2Who }}" onChange="{{ onSuField }}" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 12px;font-size:15px;color:#14372B">
+              <option value="">Choose…</option>
+              <sc-for list="{{ phoneWhoOptions }}" as="w" hint-placeholder-count="7"><option value="{{ w }}">{{ w }}</option></sc-for>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
             <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Type your full name to sign</label>
             <input data-field="waiverName" value="{{ suWaiverName }}" onChange="{{ onSuField }}" placeholder="{{ waiverPlaceholder }}" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:16px;color:#14372B;font-family:Marcellus,serif">
             <span style="font-size:12px;color:#5E6B63;line-height:1.5">{{ waiverHint }}</span>
@@ -1158,6 +1165,13 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
           </div>
           <span style="font-size:12px;color:#5E6B63;line-height:1.5">If we cannot reach the first number while the rider is with us, we call this one.</span>
         </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5E6B63;font-weight:600">Whose number is the second mobile?</label>
+            <select data-f="phone2Who" value="{{ pfPhone2Who }}" onChange="{{ onPf }}" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 12px;font-size:15px;color:#14372B">
+              <option value="">Choose…</option>
+              <sc-for list="{{ phoneWhoOptions }}" as="w" hint-placeholder-count="7"><option value="{{ w }}">{{ w }}</option></sc-for>
+            </select>
+          </div>
       </sc-if>
       <sc-if value="{{ pfAskDob }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;flex-direction:column;gap:6px">
@@ -1521,6 +1535,7 @@ const LEVELS = {
 const LIVE = !/[?&]demo\b/.test(location.search);
 let NOW = LIVE ? new Date() : new Date(2026, 8, 12, 15, 30);
 const ADMIN_URL = /\.dc\.html/i.test(location.pathname) ? "Equicare Admin.dc.html" : "admin.html";
+const PHONE_WHO = ["The rider's own other number", "Mother", "Father", "Grandparent", "Brother or sister", "Driver or nanny", "Other family"];
 const dbReady = () => new Promise(res => { const t = () => window.EQDB ? res(window.EQDB) : setTimeout(t, 30); t(); });
 // Lesson reminders. The database queues one 1 hour before each booked lesson
 // and api/push.js sends it. On iPhone this only works once the app has been
@@ -2053,6 +2068,10 @@ class Component extends DCLogic {
       LEVELS[k] = Object.assign({}, LEVELS[k] || {}, { days: L.days, start: Math.floor(L.start), end: Math.ceil(L.end),
         perBlock: L.perBlock, card: L.card, price: Number(L.price), label: L.card + "-lesson card" });
     });
+    try {
+      const ds = await db.rpc("level_day_starts");
+      Object.keys(ds || {}).forEach(k => { if (LEVELS[k]) LEVELS[k].dayStarts = ds[k] || {}; });
+    } catch (e) {}
     const riders = (d.riders || []).map(mapRider);
     const bookings = (d.bookings || []).map(mapBooking);
     const uses = riders.filter(r => r.promo).map(r => ({ id:r.promo.id, code:r.promo.code, member:r.member, name:r.name,
@@ -2344,6 +2363,7 @@ class Component extends DCLogic {
         // answer while a rider is in the arena, there has to be a second.
         if (!su.phone2) return S({ suErr:"A second mobile is needed — if we cannot reach the first number while the rider is with us, we call this one. It is for their safety." });
         if (!phoneOk(su.phone2Cc, su.phone2)) return S({ suErr:"The second mobile number does not look complete." });
+        if (!su.phone2Who) return S({ suErr:"Choose whose number the second mobile is." });
         if (su.phone2Cc === su.phoneCc && String(su.phone2).replace(/^0+/, "") === String(su.phone).replace(/^0+/, "")) {
           return S({ suErr:"The second number has to be a different one — that is the whole point of it." });
         }
@@ -2370,7 +2390,7 @@ class Component extends DCLogic {
         const dial2 = (COUNTRIES.find(x => x.code === su.phone2Cc) || COUNTRIES[0]).dial;
         const yes = !cl && su.ridden === "yes", never0 = !cl && su.ridden === "no", back0 = !cl && su.ridden === "equicare";
         const payload = { member: su.memberId.trim(), name: (cl ? cl.name : su.name).trim(), dob: cl ? cl.dob : su.dob,
-          guardian: su.guardian.trim(), phone: phoneStr.replace(/\D/g, ""), phone2: dial2 + String(su.phone2).replace(/^0+/, ""),
+          guardian: su.guardian.trim(), phone: phoneStr.replace(/\D/g, ""), phone2: dial2 + String(su.phone2).replace(/^0+/, ""), phone2_who: su.phone2Who || "",
           occupation: su.guardianOcc, email: su.email, address: su.address, gender: su.gender, school: su.school,
           waiver: cl ? "" : su.waiverName, claimed: !!cl, ridden: su.ridden, level: su.returnLevel,
           promo: st.promoPick ? st.promoPick.code : "" };
@@ -2753,7 +2773,7 @@ class Component extends DCLogic {
       },
       suName: st.su.name, suDob: st.su.dob, suGender: st.su.gender, suMemberId: st.su.memberId, suSchool: st.su.school,
       suGuardian: st.su.guardian, suGuardianOcc: st.su.guardianOcc, suPhone: st.su.phone, suPhone2: st.su.phone2,
-      suPhoneCc: st.su.phoneCc, suPhone2Cc: st.su.phone2Cc,
+      suPhoneCc: st.su.phoneCc, suPhone2Cc: st.su.phone2Cc, suPhone2Who: st.su.phone2Who || "", phoneWhoOptions: PHONE_WHO,
       guardianLabel: suAge !== null && suAge >= 18 ? "Guardian — or your own name" : "Guardian's name",
       guardianPlaceholder: suAge !== null && suAge >= 18 ? "Your own name is fine" : "Parent or legal guardian",
       guardianNote: "Riders under 18 must ride under a parent or guardian — give their name. If you are 18 or older, write your own name here.",
@@ -2813,7 +2833,7 @@ class Component extends DCLogic {
           pfSub: pf && pf.required
             ? "Equicare has to be able to reach you about a session. Add a mobile number and the booking carries on."
             : "Our paper file is missing " + say(ask.map(m => words[m])) + ". It takes a minute, and we will not ask again once it is done.",
-          pfAskPhone: ask.indexOf("phone") !== -1, pfAskPhone2: ask.indexOf("phone2") !== -1 && !(pf && pf.required),
+          pfAskPhone: ask.indexOf("phone") !== -1, pfAskPhone2: ask.indexOf("phone2") !== -1 && !(pf && pf.required), pfPhone2Who: pf ? (pf.phone2Who || "") : "",
           pfAskDob: ask.indexOf("dob") !== -1 && !(pf && pf.required), pfAskMember: ask.indexOf("member") !== -1 && !(pf && pf.required),
           pfAskGuardian: ask.indexOf("guardian") !== -1 && !(pf && pf.required),
           pfPhoneCc: pf ? pf.phoneCc : "EG", pfPhone: pf ? pf.phone : "", pfPhone2Cc: pf ? pf.phone2Cc : "EG", pfPhone2: pf ? pf.phone2 : "",
@@ -2847,6 +2867,8 @@ class Component extends DCLogic {
               out.phone2 = dial(pf.phone2Cc) + pf.phone2.replace(/^0+/, "");
               const main = (out.phone || String(r.phone || "")).replace(/\D/g, "");
               if (out.phone2 === main) return err("The second number has to be a different one.");
+              if (!pf.phone2Who) return err("Choose whose number the second mobile is.");
+              out.phone2_who = pf.phone2Who;
             }
             if (pf.dob) {
               const a = Math.floor((NOW - new Date(pf.dob)) / 31557600000);
@@ -2911,7 +2933,13 @@ class Component extends DCLogic {
 
       levelRule: testMode
         ? (chosenTest ? "Test days · " + chosenTest.days.map(d => DAY_NAMES[d]).join(", ") + " · " + fmtTime(17,0) + "–" + fmtTime(21,0) : "Answer the question below to see the test days.")
-        : "Level " + r.level + " · " + cfg.days.map(d => DAY_NAMES[d]).join(", ") + " · " + fmtTime(cfg.start,0) + "–" + fmtTime(cfg.end,0),
+        : "Level " + r.level + " · " + (() => {
+            const ds = cfg.dayStarts || {}, g = {}, t = v => fmtTime(Math.floor(v), v % 1 ? 30 : 0);
+            cfg.days.forEach(d => { const h = ds[d] != null ? Number(ds[d]) : cfg.start; (g[h] = g[h] || []).push(DAY_NAMES[d]); });
+            const keys = Object.keys(g);
+            return keys.length > 1 ? keys.map(h => g[h].join(", ") + " from " + t(Number(h))).join(" · ") + " · until " + t(cfg.end)
+                                   : cfg.days.map(d => DAY_NAMES[d]).join(", ") + " · " + t(Number(keys[0] || cfg.start)) + "–" + t(cfg.end);
+          })(),
       sharedGroup: !testMode && (r.level === 2 || r.level === 3),
       onSession: st.bookMode === "session", onTest: testMode,
       pickSession: () => S({ bookMode:"session", selDate:null, selTime:null }),

@@ -1708,7 +1708,7 @@ function fromLive(d) {
       link: x.link, claimedLevel: x.claimed_level, asked: x.asked,
       levelOk: x.level_confirmed !== false, monthly: !!x.monthly, aliases: x.aliases || "", base: x.base || "",
       owed: x.owed || 0, hasLogin: !!x.has_login, reg: x.reg || "", guardian: x.guardian || "",
-      phoneAlt: x.phone2 || "", email: x.email || "", address: x.address || "", gender: x.gender || "",
+      phoneAlt: x.phone2 || "", phoneWho: x.phone_who || "", phone2Who: x.phone2_who || "", email: x.email || "", address: x.address || "", gender: x.gender || "",
       school: x.school || "", riderJob: x.rider_job || "", forms: Array.isArray(x.forms) ? x.forms : [] };
   });
   const riders = all.filter(r => r.link !== "asked");
@@ -3306,7 +3306,9 @@ class Component extends DCLogic {
           { k:"Membership no.", v:p.member || "Not on file", color: p.member ? null : "#9B3A22", go: ed("member", "Membership number", p.member, "text", "With the part after the slash, e.g. 23503/1.") },
           { k:"Date of birth", v:dobTxt, color: p.dob ? null : "#9B3A22", go: ed("dob", "Date of birth", p.dob, "date") },
           { k:"Mobile", v:plus(p.phone) || "Missing", color: p.phone ? null : "#9B3A22", go: ed("phone", "Mobile", plus(p.phone), "tel", "With the country code, e.g. +20 100 123 4567. A number starting with 0 is taken as Egyptian.") },
+          { k:"Mobile is", v:p.phoneWho || "Not stated", color: p.phoneWho ? null : "#8C998F", go: ed("phone_who", "Whose mobile", p.phoneWho, "text", "Who answers this number: e.g. Mother (Heba), Father, the rider.") },
           { k:"Second mobile", v:plus(p.phoneAlt) || "Missing", color: p.phoneAlt ? null : "#9B3A22", go: ed("phone2", "Second mobile", plus(p.phoneAlt), "tel", "With the country code, e.g. +20 100 123 4567. A number starting with 0 is taken as Egyptian.") },
+          { k:"Second mobile is", v:p.phone2Who || "Not stated", color: p.phone2Who ? null : "#8C998F", go: ed("phone2_who", "Whose second mobile", p.phone2Who, "text", "Who answers this number: e.g. Father (Ahmed), the rider's own other number, driver.") },
           { k:"Guardian", v:p.guardian || "—", go: ed("guardian", "Guardian", p.guardian) },
           { k:"Email", v:p.email || "—", go: ed("email", "Email", p.email, "email") },
           { k:"Address", v:p.address || "—", go: ed("address", "Address", p.address) },
@@ -3326,7 +3328,7 @@ class Component extends DCLogic {
       pWa: p ? "https://api.whatsapp.com/send/?phone=" + p.phone + "&text&type=phone_number&app_absent=0" : WA,
       pTel: p ? "tel:+" + p.phone : "tel:+201066407979",
       pPhonePretty: p ? (String(p.phone || "").replace(/\D/g, "") ? "+" + p.phone : "No mobile on file") : "",
-      pPhoneWho: p ? "Guardian's mobile · WhatsApp" : "",
+      pPhoneWho: p ? (p.phoneWho ? p.phoneWho + "'s mobile · WhatsApp" : "Guardian's mobile · WhatsApp") : "",
       validityDays: st.rules.validity,
       pExpiryLabel: p ? (p.expires ? "Expires " + prettyIso(p.expires) : (p.credits > 0 ? "No end date yet · 30 days start at the next booking" : "No card yet")) : "",
       pExpiryState: (() => {
@@ -3412,7 +3414,7 @@ class Component extends DCLogic {
       ...(() => {
         const a = st.act, rows = a ? a.rows : [];
         const now = new Date(), today = now.toDateString(), yest = new Date(now.getTime() - 86400000).toDateString();
-        const when = iso => { const d = new Date(iso); const day = d.toDateString() === today ? "Today" : d.toDateString() === yest ? "Yesterday" : DAYS[d.getDay()] + " " + d.getDate() + " " + MONS[d.getMonth()]; return day + ", " + t12(d.getHours(), d.getMinutes()); };
+        const when = iso => { const d = new Date(iso); const day = d.toDateString() === today ? "Today" : d.toDateString() === yest ? "Yesterday" : DAYS[d.getDay()] + " " + d.getDate() + " " + MONS[d.getMonth()]; const h = d.getHours(), mm = d.getMinutes(); return day + ", " + (h % 12 || 12) + ":" + String(mm).padStart(2, "0") + " " + (h >= 12 ? "PM" : "AM"); };
         const kinds = [["all", "Everything"], ["signin", "Sign-ins"], ["riders", "Riders"], ["staff", "Staff"]];
         return {
           actOpen: !!a,
