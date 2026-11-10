@@ -895,6 +895,14 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
       <span style="flex:none;width:10px;height:10px;border-radius:50%;background:{{ calDot }}"></span>
     </div>
 
+    <div onClick="{{ openActivity }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:18px;padding:14px 16px;cursor:pointer">
+      <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+        <span style="font-size:14px;color:#14372B;font-weight:500">Activity</span>
+        <span style="font-size:12px;color:#5E6B63">Who signed in, and everything done in both apps</span>
+      </div>
+      <span style="font-size:14px;color:#5E6B63">›</span>
+    </div>
+
     <div style="display:flex;flex-direction:column;gap:10px">
       <div onClick="{{ togglePin }}" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
         <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6B63;font-weight:600">Staff PIN</span>
@@ -1140,6 +1148,11 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
         <sc-if value="{{ pInactive }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ pToggle }}" style="background:transparent;border:1px solid rgba(46,125,91,.35);color:#2E7D5B;font-size:14px;font-weight:500;padding:14px;border-radius:999px;cursor:pointer">Set as riding again</button>
         </sc-if>
+        <button onClick="{{ pActivity }}" style="background:#FFFFFF;border:1px solid rgba(20,55,43,.15);color:#14372B;font-size:14px;font-weight:500;padding:14px;border-radius:999px;cursor:pointer">Activity in the app ›</button>
+        <sc-if value="{{ pHasLogin }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ pRemoveAccess }}" style="background:transparent;border:1px solid rgba(155,58,34,.3);color:#9B3A22;font-size:14px;font-weight:500;padding:14px;border-radius:999px;cursor:pointer">Remove app access</button>
+        </sc-if>
+        <button onClick="{{ pDelete }}" style="background:transparent;border:none;color:#9B3A22;font-size:13px;font-weight:600;padding:10px;cursor:pointer;text-decoration:underline">Delete account</button>
       </div>
     </div>
   </div>
@@ -1356,6 +1369,43 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
           <button onClick="{{ bkClose }}" style="background:transparent;border:none;color:#5E6B63;font-size:13px;padding:8px;cursor:pointer;text-decoration:underline">Done</button>
         </div>
       </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ actOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:#FAF7F0;display:flex;flex-direction:column;z-index:35">
+    <div style="flex:none;background:#14372B;padding:calc(16px + env(safe-area-inset-top)) 18px 16px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span onClick="{{ closeActivity }}" style="font-size:24px;color:#FAF7F0;cursor:pointer;line-height:1;padding:2px 6px 2px 0">‹</span>
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <span style="font-family:Marcellus,serif;font-size:21px;color:#FAF7F0">{{ actTitle }}</span>
+          <span style="font-size:12px;color:rgba(250,247,240,.65)">{{ actSub }}</span>
+        </div>
+      </div>
+      <input value="{{ actQ }}" onChange="{{ onActQ }}" placeholder="Search a name, number or action" style="border:none;background:rgba(250,247,240,.95);border-radius:999px;padding:12px 16px;font-size:15px;color:#14372B">
+      <div style="display:flex;gap:7px;overflow-x:auto" class="eqscroll">
+        <sc-for list="{{ actKinds }}" as="k" hint-placeholder-count="4">
+          <span onClick="{{ k.go }}" style="flex:none;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }}">{{ k.label }}</span>
+        </sc-for>
+      </div>
+    </div>
+    <div class="eqscroll" style="flex:1;overflow-y:auto;padding:6px 18px calc(24px + env(safe-area-inset-bottom))">
+      <sc-if value="{{ actEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:40px 10px;text-align:center;font-size:13px;color:#5E6B63;line-height:1.6">{{ actEmptyText }}</div>
+      </sc-if>
+      <sc-for list="{{ actRows }}" as="a" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:3px;padding:12px 0;border-bottom:1px solid rgba(20,55,43,.07)">
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
+            <span style="font-size:14px;color:{{ a.color }};font-weight:600">{{ a.action }}</span>
+            <span style="flex:none;font-size:11px;color:#5E6B63">{{ a.when }}</span>
+          </div>
+          <sc-if value="{{ a.hasDetail }}" hint-placeholder-val="{{ true }}">
+            <span style="font-size:13px;color:#3E4C44;line-height:1.5">{{ a.detail }}</span>
+          </sc-if>
+          <span style="font-size:12px;color:#5E6B63">{{ a.who }}</span>
+        </div>
+      </sc-for>
     </div>
   </div>
 </sc-if>
@@ -1885,7 +1935,7 @@ class Component extends DCLogic {
       contactsOpen: false, coachAsk: null, gapExpand: false,
       listSent: {}, taskSnooze: {}, laterOpen: false, wished: {},
       feedbackOpen: false, feedback: [],
-      gapsOff: {}, undo: null, adminPin: "7979", pinNew: "", pinOpen: false, horsesOpen: false,
+      gapsOff: {}, undo: null, adminPin: "7979", pinNew: "", pinOpen: false, act: null, horsesOpen: false,
       monthPick: null, bk: null, calOpen: false, calMonth: null, monthsAll: false, cashReqs: [], dayReqs: [], blocked: {}, showBlock: false,
       extReason: "Travel", extOther: "", extDate: "", recordAt: null, lang: "en",
       sales: [
@@ -2357,6 +2407,37 @@ class Component extends DCLogic {
       this.setState(s => ({ bk: Object.assign({}, s.bk, { done: { when, owed: !!res.owed, monthly: !!res.monthly, over: !!res.over, left: res.left } }) }));
       this.loadLive().catch(() => {});
     }).catch(e => this.flash(e.message));
+  }
+  // Setup → Activity, or one rider's activity from their page.
+  openActivity(rider) {
+    this.setState({ act: { rider: rider ? rider.id : null, name: rider ? rider.name : "", kind: "all", q: "", rows: [], loading: true } });
+    this.loadActivity();
+  }
+  loadActivity() {
+    if (!LIVE) return this.setState(s => s.act ? { act: Object.assign({}, s.act, { loading: false, demo: true }) } : null);
+    const a = this.state.act; if (!a) return;
+    const key = a.rider + "|" + a.kind + "|" + a.q; this._actKey = key;
+    dbReady().then(db => db.rpc("admin_activity", { p_rider: a.rider, p_q: a.q || null, p_kind: a.kind, p_limit: 300 }))
+      .then(rows => { if (this._actKey === key) this.setState(s => s.act ? { act: Object.assign({}, s.act, { rows: rows || [], loading: false }) } : null); })
+      .catch(e => { this.setState(s => s.act ? { act: Object.assign({}, s.act, { loading: false }) } : null); this.flash(e.message); });
+  }
+  askRemoveRider(p, mode) {
+    const first = p.name.split(" ")[0];
+    this.setState({ ask: mode === "delete" ? {
+      title: "Delete " + first + "'s account?",
+      body: p.name + " leaves the rider app and the riders list, every phone is signed out, and their future bookings are cancelled. A copy is kept, so it can be brought back if this was a mistake.",
+      cta: "Delete the account",
+      run: () => dbReady().then(db => db.rpc("admin_remove_rider", { p_rider: p.id, p_mode: "delete" }))
+        .then(res => { this.setState({ openRider: null }); this.flash(first + "'s account deleted" + (res && res.cancelled ? " · " + res.cancelled + " booking(s) cancelled" : "")); return this.loadLive(); })
+        .catch(e => this.flash(e.message))
+    } : {
+      title: "Remove " + first + "'s app access?",
+      body: "Every phone signed in as " + p.name + " is signed out. Their record, card and bookings stay. They (or the right person) can sign in again with the name and membership number.",
+      cta: "Remove access",
+      run: () => dbReady().then(db => db.rpc("admin_remove_rider", { p_rider: p.id, p_mode: "access" }))
+        .then(() => { this.flash("App access removed for " + first); return this.loadLive(); })
+        .catch(e => this.flash(e.message))
+    } });
   }
   askCancelBooking(b, r) {
     const when = DAYS[b.at.getDay()] + " " + b.at.getDate() + " " + MONS[b.at.getMonth()] + ", " + t12(b.at.getHours(), b.at.getMinutes());
@@ -3243,6 +3324,35 @@ class Component extends DCLogic {
       hasCardLog: !!(p && p.cardLog && p.cardLog.length),
       cardLog: p && p.cardLog ? p.cardLog.slice().reverse() : [],
       pActive: p ? p.active : false, pInactive: p ? !p.active : false,
+      pHasLogin: p ? !!p.hasLogin : false,
+      pActivity: () => { if (p) this.openActivity(p); },
+      pRemoveAccess: () => { if (p) this.askRemoveRider(p, "access"); },
+      pDelete: () => { if (p) this.askRemoveRider(p, "delete"); },
+      ...(() => {
+        const a = st.act, rows = a ? a.rows : [];
+        const now = new Date(), today = now.toDateString(), yest = new Date(now.getTime() - 86400000).toDateString();
+        const when = iso => { const d = new Date(iso); const day = d.toDateString() === today ? "Today" : d.toDateString() === yest ? "Yesterday" : DAYS[d.getDay()] + " " + d.getDate() + " " + MONS[d.getMonth()]; return day + ", " + t12(d.getHours(), d.getMinutes()); };
+        const kinds = [["all", "Everything"], ["signin", "Sign-ins"], ["riders", "Riders"], ["staff", "Staff"]];
+        return {
+          actOpen: !!a,
+          actTitle: a && a.rider ? a.name.split(" ")[0] + "'s activity" : "Activity",
+          actSub: !a ? "" : a.loading ? "Loading…" : rows.length + (rows.length === 300 ? "+ " : " ") + (rows.length === 1 ? "entry" : "entries") + " · newest first",
+          actQ: a ? a.q : "",
+          onActQ: e => { const v = e.target.value; this.setState(s => ({ act: Object.assign({}, s.act, { q: v, loading: true }) })); clearTimeout(this._actT); this._actT = setTimeout(() => this.loadActivity(), 400); },
+          actKinds: kinds.map(([k, label]) => ({ label, bg: a && a.kind === k ? "#C9A24A" : "rgba(250,247,240,.12)", fg: a && a.kind === k ? "#14372B" : "#FAF7F0",
+            go: () => { this.setState(s => ({ act: Object.assign({}, s.act, { kind: k, loading: true }) }), () => this.loadActivity()); } })),
+          closeActivity: () => S({ act: null }),
+          actEmpty: !!a && !a.loading && !rows.length,
+          actEmptyText: a && a.demo ? "The activity log is in the live app only." : "Nothing yet. Every sign-in, booking, cancellation, payment and change shows here from now on.",
+          actRows: rows.map(x => ({
+            action: x.action + (x.rider && !(a && a.rider) && x.rider !== x.who ? " · " + x.rider : ""),
+            detail: x.detail || "", hasDetail: !!x.detail, when: when(x.at),
+            who: x.role === "staff" ? "By staff" : x.role === "system" ? "By the system" : "By " + (x.who || "a rider's phone"),
+            color: /fail|blocked|deleted|removed/i.test(x.action) ? "#9B3A22" : (x.role === "staff" ? "#8A6A22" : "#14372B")
+          }))
+        };
+      })(),
+      openActivity: () => this.openActivity(null),
       pToggle: () => { if (p) { this.patch(p.id, r => ({ active: !r.active })); this.flash(p.name + (p.active ? " set as not riding" : " set as riding")); } },
 
       hasPending: pending.length > 0, noPending: pending.length === 0,

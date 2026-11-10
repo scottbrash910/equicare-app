@@ -2045,6 +2045,7 @@ class Component extends DCLogic {
     const db = await dbReady();
     const d = await db.rpc("my_data");
     this._lastLoad = Date.now();
+    if (!this._opened && (d.riders || []).length) { this._opened = true; db.rpc("log_open").catch(() => {}); }
     PUSH.mode().then(m => { if (m !== this.state.pushMode) this.setState({ pushMode: m }); }).catch(() => {});
     if (d.levels) Object.keys(d.levels).forEach(k => {
       const L = d.levels[k];
@@ -2306,7 +2307,7 @@ class Component extends DCLogic {
             const k = await db.rpc("peek_rider", { p_member: num, p_dob: su.dob, p_name: su.name });
             if (!k.found) return S({ step:2, suErr:"" });
             if (!k.dob_ok) return S({ suErr:"That number is in our register under a different date of birth. Check it, or message Equicare." });
-            if (k.linked) return S({ suErr:"This rider already has an account. Go back and sign in with the membership number and date of birth." });
+            if (k.linked) return S({ suErr:"This rider already has an account. Go back to Sign in and use the rider's name and membership number. Trouble? Message Equicare." });
             S({ suErr:"", claim: { member:num, dob:su.dob, name:k.name, level:k.level, credits:k.credits || 0,
               total:k.total || (LEVELS[k.level] || LEVELS[1]).card, expires: k.expires ? prettyDate(k.expires) : "—",
               expiresOn: k.expires ? endOfDay(k.expires) : null, guardian:k.guardian || "",
@@ -2547,10 +2548,11 @@ class Component extends DCLogic {
         const rname = String(st.login.rname || "").trim();
         // Name and number first. If the name does not match closely enough,
         // the date of birth is asked instead, so a spelling never locks anyone out.
-        if (!rname || !id) return S({ loginErr:"Enter the rider's name and membership number." });
+        if (!id) return S({ loginErr: rname ? "Enter the membership number too." : "Enter the rider's name and membership number." });
         if (!memberOk(id)) return S({ loginErr:"Write the membership number, like 26604/1. The part after the slash can be left out." });
         if (st.askDob && !dob) return S({ loginErr:"Pick the rider's date of birth." });
         const noName = "We couldn't match that name to this number. Pick the rider's date of birth instead.";
+        if (!LIVE && !st.askDob && !rname) return S({ loginErr:"Enter the rider's name and membership number." });
         if (!LIVE && !st.askDob) {
           const k = st.riders.find(x => x.member === id);
           if (!k) return S({ loginErr:"We cannot find that membership number. Check it, or create an account." });
@@ -2562,7 +2564,7 @@ class Component extends DCLogic {
           const res = st.askDob
             ? await db.rpc("sign_in_rider", { p_member: id, p_dob: dob })
             : await db.rpc("sign_in_by_name", { p_member: id, p_name: rname });
-          if (res && res.error === "name") return S({ askDob:true, loginErr: noName });
+          if (res && res.error === "name") return S({ askDob:true, loginErr: rname ? noName : "More than one rider uses this number. Write the rider's name, or pick the date of birth." });
           if (res && res.error === "busy") return S({ loginErr:"Too many tries. Wait 15 minutes, or tap Trouble signing in." });
           if (res && res.error === "unknown") return S({ loginErr:"We cannot find that membership number. Check it, or create an account." });
           if (res && res.error === "dob") return S({ loginErr:"That date of birth does not match this membership number. Check it, or tap Trouble signing in." });
