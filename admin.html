@@ -652,6 +652,22 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
               </div>
             </div>
             </sc-if>
+            <sc-if value="{{ l.hasDayRows }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:7px;background:rgba(20,55,43,.04);border-radius:14px;padding:12px 14px">
+                <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5E6B63;font-weight:600">Start time by day</span>
+                <sc-for list="{{ l.dayRows }}" as="dr" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span style="width:44px;flex:none;font-size:13px;color:#14372B;font-weight:600">{{ dr.label }}</span>
+                    <select value="{{ dr.v }}" onChange="{{ dr.onChange }}" style="flex:1;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:12px;padding:9px 11px;font-size:13px;color:#14372B">
+                      <sc-for list="{{ l.hours }}" as="h" hint-placeholder-count="8">
+                        <option value="{{ h.v }}">{{ h.t }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                </sc-for>
+                <span style="font-size:11px;color:#8C998F;line-height:1.45">Each day can start at its own time. Booked sessions are never removed.</span>
+              </div>
+            </sc-if>
             <sc-if value="{{ l.mirroredSchedule }}" hint-placeholder-val="{{ false }}">
               <div style="background:rgba(20,55,43,.04);border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:3px">
                 <span style="font-size:12px;color:#5E6B63">Days and hours</span>
@@ -1133,9 +1149,9 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
         <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6B63;font-weight:600">Details</span>
         <div style="background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:18px;padding:6px 16px">
           <sc-for list="{{ pDetails }}" as="d" hint-placeholder-count="6">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(20,55,43,.07)">
+            <div onClick="{{ d.go }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(20,55,43,.07);cursor:{{ d.cursor }}">
               <span style="font-size:13px;color:#5E6B63;flex:none">{{ d.k }}</span>
-              <span style="font-size:13px;color:{{ d.color }};font-weight:500;text-align:right">{{ d.v }}</span>
+              <span style="font-size:13px;color:{{ d.color }};font-weight:500;text-align:right">{{ d.v }}<span style="color:#8A6A22;font-weight:600">{{ d.hint }}</span></span>
             </div>
           </sc-for>
         </div>
@@ -1410,6 +1426,23 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
   </div>
 </sc-if>
 
+<sc-if value="{{ edOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;background:rgba(20,55,43,.5);display:flex;flex-direction:column;justify-content:flex-end;z-index:37">
+    <div onClick="{{ edCancel }}" style="flex:1;cursor:pointer"></div>
+    <div style="background:#FAF7F0;border-radius:30px 30px 0 0;padding:24px 20px calc(26px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:15px">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-family:Marcellus,serif;font-size:21px;color:#14372B">{{ edTitle }}</span>
+        <span style="font-size:13px;color:#5E6B63;line-height:1.55">{{ edNote }}</span>
+      </div>
+      <input value="{{ edValue }}" onChange="{{ onEdValue }}" type="{{ edType }}" placeholder="{{ edPlaceholder }}" style="border:1px solid rgba(20,55,43,.18);background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:16px;color:#14372B">
+      <div style="display:flex;gap:9px">
+        <button onClick="{{ edCancel }}" style="flex:1;background:transparent;border:1px solid rgba(20,55,43,.2);color:#14372B;font-size:15px;font-weight:500;padding:15px;border-radius:999px;cursor:pointer">Cancel</button>
+        <button onClick="{{ edSave }}" style="flex:1.2;border:none;background:#14372B;color:#FAF7F0;font-size:15px;font-weight:600;padding:15px;border-radius:999px;cursor:pointer">{{ edCta }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
 <sc-if value="{{ askOpen }}" hint-placeholder-val="{{ false }}">
   <div style="position:absolute;inset:0;background:rgba(20,55,43,.5);display:flex;flex-direction:column;justify-content:flex-end;z-index:37">
     <div onClick="{{ askCancel }}" style="flex:1;cursor:pointer"></div>
@@ -1659,7 +1692,7 @@ function day10(v) { return v ? String(v).slice(0, 10) : null; }
 function fromLive(d) {
   const lv = {};
   Object.keys(d.levels || {}).forEach(k => { const L = d.levels[k];
-    lv[k] = { days: (L.days || []).slice().sort(), start: Number(L.start), end: Number(L.end), perBlock: L.perBlock, card: L.card, price: Number(L.price) }; });
+    lv[k] = { days: (L.days || []).slice().sort(), start: Number(L.start), end: Number(L.end), perBlock: L.perBlock, card: L.card, price: Number(L.price), dayStarts: {} }; });
   const lt = Object.assign({}, d.level_trainers || {});
   const all = (d.riders || []).map(x => {
     const c = x.card, base = lv[x.level] || { card: 12 }, missing = [];
@@ -1935,7 +1968,7 @@ class Component extends DCLogic {
       contactsOpen: false, coachAsk: null, gapExpand: false,
       listSent: {}, taskSnooze: {}, laterOpen: false, wished: {},
       feedbackOpen: false, feedback: [],
-      gapsOff: {}, undo: null, adminPin: "7979", pinNew: "", pinOpen: false, act: null, horsesOpen: false,
+      gapsOff: {}, undo: null, adminPin: "7979", pinNew: "", pinOpen: false, act: null, ed: null, horsesOpen: false,
       monthPick: null, bk: null, calOpen: false, calMonth: null, monthsAll: false, cashReqs: [], dayReqs: [], blocked: {}, showBlock: false,
       extReason: "Travel", extOther: "", extDate: "", recordAt: null, lang: "en",
       sales: [
@@ -2077,7 +2110,12 @@ class Component extends DCLogic {
       const shareCh = n === 3 && a.shareL23 !== b.shareL23;
       if (JSON.stringify(x) === JSON.stringify(y) && !shareCh) return;
       const reslot = JSON.stringify([x.days, x.start, x.end]) !== JSON.stringify([y.days, y.start, y.end]);
-      ops.push({ t:"level", n, days:y.days, start:y.start, end:y.end, card:y.card, price:y.price, shares: n === 3 ? b.shareL23 : undefined, reslot });
+      const xs = Object.assign({}, x, { dayStarts: null }), ys = Object.assign({}, y, { dayStarts: null });
+      if (JSON.stringify(xs) !== JSON.stringify(ys) || shareCh)
+        ops.push({ t:"level", n, days:y.days, start:y.start, end:y.end, card:y.card, price:y.price, shares: n === 3 ? b.shareL23 : undefined, reslot });
+      const dsOf = v => { const m = v.dayStarts || {}, o = {}; (v.days || []).forEach(i => { if (m[i] != null) o[i] = m[i]; }); return o; };
+      if (!(n === 3 && b.shareL23) && (JSON.stringify(dsOf(x)) !== JSON.stringify(dsOf(y)) || (reslot && Object.keys(dsOf(y)).length)))
+        ops.push({ t:"day_starts", n, map: dsOf(y) });
     });
     if (a.feedbackN > 0 && b.feedbackN === 0) ops.push({ t:"feedback_clear" });
     return ops;
@@ -2095,7 +2133,13 @@ class Component extends DCLogic {
     this._flushing = true;
     try {
       const db = await dbReady();
-      await db.rpc("admin_apply", { p_ops: ops });
+      const dayOps = ops.filter(o => o.t === "day_starts"), rest = ops.filter(o => o.t !== "day_starts");
+      if (rest.length) await db.rpc("admin_apply", { p_ops: rest });
+      for (const o of dayOps) {
+        const res = await db.rpc("admin_day_starts", { p_level: o.n, p_map: o.map });
+        const late = (res && res.booked_before_start) || [];
+        this.flash(late.length ? "Start times saved · move these bookings: " + late.join("; ") : "Start times saved");
+      }
       this._snap = next;
       this._promoApplied = {};
       if (JSON.stringify(this.liveSnap(this.state)) === JSON.stringify(next)) await this.loadLive();
@@ -2116,6 +2160,14 @@ class Component extends DCLogic {
       throw e;
     }
     const part = fromLive(d);
+    try {
+      const ds = await db.rpc("level_day_starts");
+      Object.keys(part.levels || {}).forEach(k => {
+        const m = (ds && ds[k]) || {}, out = {};
+        Object.keys(m).forEach(dow => { out[dow] = Math.round(Number(m[dow]) * 2) / 2; });
+        part.levels[k].dayStarts = out;
+      });
+    } catch (e) {}
     if (!part.levels) delete part.levels;
     if (!part.trainers.length) delete part.trainers;
     this._lastLoad = Date.now();
@@ -3077,6 +3129,23 @@ class Component extends DCLogic {
         return out;
       })(),
       openInstagram: () => { try { window.open(INSTAGRAM, "_blank", "noopener"); } catch (e) {} },
+      edOpen: !!st.ed,
+      edTitle: st.ed ? st.ed.first + "'s " + st.ed.label.toLowerCase() : "",
+      edNote: st.ed ? (st.ed.note || "The old value is kept in the backup and shows in the rider's activity.") : "",
+      edValue: st.ed ? st.ed.value : "",
+      edType: st.ed ? st.ed.type : "text",
+      edPlaceholder: st.ed ? st.ed.label : "",
+      edCta: st.ed && st.ed.busy ? "Saving…" : "Save",
+      onEdValue: e => { const v = e.target.value; this.setState(s => ({ ed: Object.assign({}, s.ed, { value: v }) })); },
+      edCancel: () => S({ ed: null }),
+      edSave: () => {
+        const e = st.ed; if (!e || e.busy) return;
+        if (!LIVE) { S({ ed: null }); return this.flash("Saved in the live app only"); }
+        this.setState(s => ({ ed: Object.assign({}, s.ed, { busy: true }) }));
+        dbReady().then(db => db.rpc("admin_edit_rider", { p_rider: e.rider, p_field: e.field, p_value: e.value }))
+          .then(() => { this.setState({ ed: null }); this.flash(e.label + " saved"); return this.loadLive(); })
+          .catch(err => { this.setState(s => s.ed ? { ed: Object.assign({}, s.ed, { busy: false }) } : null); this.flash(err.message); });
+      },
       askOpen: !!st.ask,
       askTitle: st.ask ? st.ask.title : "",
       askBody: st.ask ? st.ask.body : "",
@@ -3228,20 +3297,32 @@ class Component extends DCLogic {
       pForms: p ? (p.forms || []).map((f, i) => ({ url: f.url, label: "Form " + f.no + (p.forms.length > 1 ? (i === 0 ? " · first" : " · later") : "") })) : [],
       pNoForms: !!p && !(p.forms || []).length,
       pNoFormsNote: p && p.reg && p.reg.indexOf("EQ-NF") === 0 ? "No paper form was found for this rider." : "Signed up in the app · no paper form.",
-      pDetails: p ? [
-        { k:"Date of birth", v:(() => { if (!p.dob) return "Not on file"; const d = new Date(p.dob); return d.getDate() + " " + MONS[d.getMonth()] + " " + d.getFullYear(); })(), color:"#14372B" },
-        { k:"Second mobile", v:p.phoneAlt ? "+" + String(p.phoneAlt).replace(/\D/g, "") : "Missing", color:p.phoneAlt ? "#14372B" : "#9B3A22" },
-        { k:"Guardian", v:p.guardian || "—", color:"#14372B" },
-        { k:"Email", v:p.email || "—", color:"#14372B" },
-        { k:"Address", v:p.address || "—", color:"#14372B" },
-        { k:"Rider ID", v:p.reg || "—", color:"#14372B" },
-        { k:"Lessons at this level", v:String(p.lessons), color:"#14372B" },
-        { k:"Lessons in total", v:String(p.lifetime || p.lessons), color:"#14372B" },
-        { k:"Last ride", v:(() => { if (!p.lastRide) return "—"; const d = new Date(p.lastRide); return d.getDate() + " " + MONS[d.getMonth()]; })(), color:"#14372B" },
-        { k:"Status", v:p.active ? "Riding" : "Not riding", color:p.active ? "#2E7D5B" : "#9B3A22" },
-        { k:"With Equicare since", v:(p.since ? prettyIso(p.since) + " · " + tenureWords(p.since) : "—"), color:"#14372B" },
-        { k:"Waiver", v:(p.waiverOn ? "Signed " + prettyIso(p.waiverOn) : "Signed"), color:"#2E7D5B" }
-      ] : [],
+      pDetails: p ? (() => {
+        const dobTxt = (() => { if (!p.dob) return "Not on file"; const d = new Date(p.dob); return d.getDate() + " " + MONS[d.getMonth()] + " " + d.getFullYear(); })();
+        const ed = (field, label, value, type, note) => () => S({ ed: { rider: p.id, first: p.name.split(" ")[0], field, label, value: value || "", type: type || "text", note: note || "", busy: false } });
+        const plus = v => v ? "+" + String(v).replace(/\D/g, "") : "";
+        const rows = [
+          { k:"Name", v:p.name, go: ed("name", "Name", p.name, "text", "As it should appear in both apps. Old spellings still work at sign-in.") },
+          { k:"Membership no.", v:p.member || "Not on file", color: p.member ? null : "#9B3A22", go: ed("member", "Membership number", p.member, "text", "With the part after the slash, e.g. 23503/1.") },
+          { k:"Date of birth", v:dobTxt, color: p.dob ? null : "#9B3A22", go: ed("dob", "Date of birth", p.dob, "date") },
+          { k:"Mobile", v:plus(p.phone) || "Missing", color: p.phone ? null : "#9B3A22", go: ed("phone", "Mobile", plus(p.phone), "tel", "With the country code, e.g. +20 100 123 4567. A number starting with 0 is taken as Egyptian.") },
+          { k:"Second mobile", v:plus(p.phoneAlt) || "Missing", color: p.phoneAlt ? null : "#9B3A22", go: ed("phone2", "Second mobile", plus(p.phoneAlt), "tel", "With the country code, e.g. +20 100 123 4567. A number starting with 0 is taken as Egyptian.") },
+          { k:"Guardian", v:p.guardian || "—", go: ed("guardian", "Guardian", p.guardian) },
+          { k:"Email", v:p.email || "—", go: ed("email", "Email", p.email, "email") },
+          { k:"Address", v:p.address || "—", go: ed("address", "Address", p.address) },
+          { k:"School / work", v:p.school || "—", go: ed("school", "School / work", p.school) },
+          { k:"Rider ID", v:p.reg || "—", hint: (p.forms || []).length ? "  Open form ↗" : "",
+            go: () => { const f = (p.forms || [])[0]; if (f && f.url) window.open(f.url, "_blank", "noopener"); else this.flash("No scanned form for this rider"); } },
+          { k:"Lessons at this level", v:String(p.lessons) },
+          { k:"Lessons in total", v:String(p.lifetime || p.lessons) },
+          { k:"Last ride", v:(() => { if (!p.lastRide) return "—"; const d = new Date(p.lastRide); return d.getDate() + " " + MONS[d.getMonth()]; })() },
+          { k:"Status", v:p.active ? "Riding" : "Not riding", color:p.active ? "#2E7D5B" : "#9B3A22" },
+          { k:"With Equicare since", v:(p.since ? prettyIso(p.since) + " · " + tenureWords(p.since) : "—") },
+          { k:"Waiver", v:(p.waiverOn ? "Signed " + prettyIso(p.waiverOn) : "Signed"), color:"#2E7D5B" }
+        ];
+        return rows.map(r => ({ k: r.k, v: r.v, color: r.color || "#14372B", hint: r.hint || (r.go && r.k !== "Rider ID" ? "  ✎" : ""),
+          go: r.go || (() => {}), cursor: r.go ? "pointer" : "default" }));
+      })() : [],
       pWa: p ? "https://api.whatsapp.com/send/?phone=" + p.phone + "&text&type=phone_number&app_absent=0" : WA,
       pTel: p ? "tel:+" + p.phone : "tel:+201066407979",
       pPhonePretty: p ? (String(p.phone || "").replace(/\D/g, "") ? "+" + p.phone : "No mobile on file") : "",
@@ -3697,7 +3778,27 @@ class Component extends DCLogic {
           }),
           editableSchedule: !mirrored,
           mirroredSchedule: mirrored,
-          mirrorLine: sched.days.map(i => DAYS[i]).join(", ") + " · " + tHalf(sched.start) + " to " + tHalf(sched.end),
+          hasDayRows: !mirrored && sched.days.length > 1,
+          dayRows: sched.days.map(i => {
+            const ds = sched.dayStarts || {};
+            return { label: DAYS[i], v: ds[i] != null ? ds[i] : sched.start,
+              onChange: e => {
+                const v = Number(e.target.value);
+                this.setState(s => {
+                  const lv = Object.assign({}, s.levels);
+                  const next = Object.assign({}, lv[schedFrom].dayStarts || {});
+                  if (v === lv[schedFrom].start) delete next[i]; else next[i] = v;
+                  lv[schedFrom] = Object.assign({}, lv[schedFrom], { dayStarts: next });
+                  if (share && schedFrom === 2) lv[3] = Object.assign({}, lv[3], { dayStarts: next });
+                  return { levels: lv };
+                });
+              } };
+          }),
+          mirrorLine: (() => {
+            const ds = sched.dayStarts || {}, groups = {};
+            sched.days.forEach(i => { const h = ds[i] != null ? ds[i] : sched.start; (groups[h] = groups[h] || []).push(DAYS[i]); });
+            return Object.keys(groups).map(h => groups[h].join(", ") + " from " + tHalf(Number(h))).join(" · ") + " · until " + tHalf(sched.end);
+          })(),
           weeklyNote: "Repeats every week",
           start: sched.start, end: sched.end, card: String(cfg.card), price: String(cfg.price),
           onStart: e => writeHour("start", Number(e.target.value)),
