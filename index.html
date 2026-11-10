@@ -1872,7 +1872,7 @@ class Component extends DCLogic {
       if (w && /^\d{8,15}$/.test(w)) this.setState({ waDigits: w });
     } catch (e) {}
     try {
-      const q = new URLSearchParams(location.search), qm = q.get("m"), qn = q.get("n");
+      const q = new URLSearchParams(location.search), qm = q.get("m"), qn = (q.get("n") || "").replace(/_/g, " ").replace(/\s+/g, " ").trim();
       if (qm || qn) {
         let known = false;
         try { known = !!window.localStorage.getItem("equicare.session"); } catch (e) {}

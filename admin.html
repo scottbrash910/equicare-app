@@ -886,6 +886,14 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
       </sc-if>
     </div>
 
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:18px;padding:14px 16px">
+      <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+        <span style="font-size:14px;color:#14372B;font-weight:500">Google Calendar</span>
+        <span style="font-size:12px;color:#5E6B63">{{ calNote }}</span>
+      </div>
+      <span style="flex:none;width:10px;height:10px;border-radius:50%;background:{{ calDot }}"></span>
+    </div>
+
     <div style="display:flex;flex-direction:column;gap:10px">
       <div onClick="{{ togglePin }}" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
         <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6B63;font-weight:600">Staff PIN</span>
@@ -1647,7 +1655,7 @@ function fromLive(d) {
     cashReqs: [], importRows: [],
     rules: { horizon: Number(se.booking_horizon_days) || 14, cancel: Number(se.cancel_window_hours) || 24, minAge: Number(se.min_age_years) || 7, validity: Number(se.card_validity_days) || 30 },
     instapay: String(se.instapay_address || ""), waCc: wa.indexOf("20") === 0 ? "EG" : "EG", waNumber: wa.indexOf("20") === 0 ? wa.slice(2) : wa,
-    adminPin: d.pin || "7979", horses: Number(d.horses) || 4,
+    adminPin: d.pin || "7979", horses: Number(d.horses) || 4, calLast: String(se.calendar_last_sync || ""),
     trainers: d.trainers && d.trainers.length ? d.trainers : [], levelTrainer: lt,
     levels: Object.keys(lv).length ? lv : undefined,
     shareL23: !!(d.levels && d.levels[3] && d.levels[3].shares === 2)
@@ -1805,7 +1813,7 @@ const GUIDE = [
     { q:"Riders to link (\"I already ride at Equicare\")", a:"When a parent creates an account and says they already ride here, the account waits at the top of Riders under \"… riders to link\".\n\nFor each one the app shows up to 3 Best matches on the register, with the reason in green: same family number · same first name · same birth date · same phone.\n\n• Link: joins the new account to that record. The level, card and lessons carry over.\n• Add at Level …: no record matches. Adds them as a new rider; then add their card in Money.\n• Not one of ours · free test: they are new to Equicare; they book the free test.\n\nBefore tapping Link, check the birth date. Brothers and sisters share the family number, so the number alone is not enough.", img:"assets/help/admin-link.jpg" },
     { q:"The rider's page, top to bottom", a:"Tap any rider to open their page:\n• Book a session, and their next bookings, each with Cancel.\n• Profile not finished: what is still missing from the paper form.\n• Level: the three level buttons.\n• Sessions left: the number on the card, with − and +.\n• Card: end date, extra days, replace the card, and every change made.\n• Trainer: their usual trainer.\n• Contact: the parent's phone with Call and WhatsApp buttons, then Send the app link on WhatsApp and Save to my contacts.\n• Paper application form: Open ↗ shows the scanned form.\n• Details: birth date, second mobile, guardian, email, address, rider ID, lessons, last ride, since when, waiver.\n• Set as not riding / Set as riding again.\n\nTap ‹ at the top to go back.", img:"assets/help/admin-rider.jpg" },
     { q:"Correcting a rider's name", a:"Tap the name at the top of the rider's page (it has a small ✎).\n• A box opens with the name.\n• Correct it and tap Save. ✕ leaves it as it was.\n\nFirst and last name at least. The rider still signs in with the first name, so a spelling fix never locks them out." },
-    { q:"Sending a family their app link", a:"Rider's page → Send the app link on WhatsApp.\n• WhatsApp opens on the family's number with the message ready, in English and a short Arabic line.\n• It has their personal link: it fills in the rider's name and membership number, so the parent only taps Sign in.\n• It also has how to add the app to the home screen and the 1-minute video.\n\nOne message per family is enough: once a parent signs in, brothers and sisters on the same family number and phone appear on their phone too.\n\nThe link only fills in the form. It never signs anyone in by itself, so a forwarded link cannot open someone's account." },
+    { q:"Sending a family their app link", a:"Rider's page → Send the app link on WhatsApp.\n• WhatsApp opens on the family's number with the message ready, in English.\n• It has their personal link: it fills in the rider's name and membership number, so the parent only taps Sign in.\n• It also has how to add the app to the home screen and the 1-minute video.\n\nOne message per family is enough: once a parent signs in, brothers and sisters on the same family number and phone appear on their phone too.\n\nThe link only fills in the form. It never signs anyone in by itself, so a forwarded link cannot open someone's account." },
     { q:"Saving a rider to my phone's contacts", a:"Rider's page → Save to my contacts.\n• The contact card opens with the rider's name, Equicare Gezira, both mobiles, email, address and birthday.\n• The notes start with \"Equicare Gezira rider\", then the membership number, level, guardian and rider ID.\n• iPhone: tap Create New Contact. If nothing opens from the home-screen icon, open the admin page in Safari.\n\nSetup → Contacts downloads every rider with a phone in one file." },
     { q:"Opening the paper application form", a:"Rider's page → Paper application form → Open ↗.\n• The scan opens in Google Drive.\n• Riders with two forms have both, first and later.\n• The phone must be signed in to a Google account that can see the Application Form Documents folder.\n\nRiders who joined in the app say \"Signed up in the app · no paper form\"." },
     { q:"Details families add themselves", a:"When a family opens the app and the file is missing their mobile, second mobile, birth date, membership number or a parent's name, the app asks them once. They can tap Later; a small card on their home screen stays until it is done.\n\nOnly a missing mobile stops them: they add it before their first booking.\n\nEvery change shows on the rider's page under Changes, for example \"Family added mobile in the app\". The app never overwrites a birth date or number already on file: only staff change those." },
@@ -1828,6 +1836,7 @@ const GUIDE = [
     { q:"The monthly record for the club", a:"1. Numbers → tap the month's bar → Record for signing ↗ (or the reminder in Today's list on the 1st–7th).\n2. It lists: 1. every card sold with the price and the total, 2. every card change (extra days, replaced cards, closed days), 3. new riders.\n3. Tap Print. On a phone choose Save as PDF, or print from a computer.\n4. Sign \"Prepared by\", get \"Approved by\" signed, file it.\n\nEverything comes from the app's own log, so it matches what really happened." }
   ]},
   { id:"setup", title:"Setup", items:[
+    { q:"Google Calendar", a:"Every session booked in the app appears in the Equicare Gezira Google Calendar by itself, within seconds:\n• Title in English: level and riders, e.g. L1 · Ghalia Ibrahim.\n• Notes in Arabic: membership number, mobile, sessions left, trainer, who booked it.\n• Colours: Level 1 Tangerine, Level 2 Banana, Level 3 Basil, Level 4 (monthly) Grape, level tests Peacock.\n• A cancelled session disappears; a moved one moves.\n\nBook, move and cancel in this app, not in the calendar: the calendar follows the app, not the other way round. Events typed by hand and everything before today stay as they are.\n\nSetup → Google Calendar shows when it last updated. A green dot means it is working." },
     { q:"Changing the staff PIN", a:"Do this the first time you sign in, and whenever someone leaves.\n1. Setup → Staff PIN → Change.\n2. Type 4 new digits → Save.\n3. Sign out and sign in once with the new PIN to check it.\n\nIt changes for every phone at once. Never send the PIN on a group chat.", img:"assets/help/admin-setup.jpg" },
     { q:"Levels: days, hours, sessions and prices", a:"Setup → Levels:\n• Tap the days to switch them on (green) or off.\n• Starts / Ends: the first and last time riders can book.\n• Sessions and Price EGP: the card for that level.\n• \"Levels 2 and 3 ride together in one session\": when on, Level 3 follows Level 2's days and hours.\n\nThese are the same numbers the rider app uses, and new times are built from them. Change them only when Equicare has decided, and check the bookings already made on any day you switch off." },
     { q:"Horses and trainers", a:"• Horses → Show → − / +: how many horses work. A time can never hold more riders than horses.\n• Trainers → Show: add a name and tap Add.\n• Remove a trainer: pick Who takes over. Their riders, their levels and today's sessions all move to that person. The last trainer cannot be removed." },
@@ -3120,13 +3129,15 @@ class Component extends DCLogic {
       pInvite: () => {
         if (!p) return;
         const first = p.name.split(" ")[0];
-        const link = APP_LINK + "/?" + (p.member ? "m=" + encodeURIComponent(p.member) + "&" : "") + "n=" + encodeURIComponent(p.name);
+        // No spaces or % signs in the link: WhatsApp cuts links at a space. "_" stands for a space.
+        const nm = p.name.trim().replace(/[^A-Za-z\u00C0-\u024F\u0600-\u06FF\s-]+/g, "").replace(/\s+/g, "_");
+        const mb = String(p.member || "").replace(/[^\d\/]/g, "");
+        const link = APP_LINK + "/?" + (mb ? "m=" + mb + "&" : "") + "n=" + encodeURIComponent(nm);
         const msg = "Hello from Equicare Gezira 🐴\n\nYou can now book " + first + "'s sessions in our new app, in 20 seconds.\n"
           + first + " already has an account: no need to sign up.\n\n"
           + "1. Open this link (it fills in " + first + "'s name and membership number):\n" + link + "\n"
-          + "2. Tap Sign in.\n3. Add it to your home screen: iPhone → Share → Add to Home Screen. Android → ⋮ → Install app.\n\n"
-          + "1-minute video: " + APP_LINK + "/assets/walkthrough.mp4\n\n"
-          + "أهلاً من إكويكير الجزيرة 🐴 تقدروا تحجزوا حصص " + first + " من التطبيق الجديد. الحساب جاهز: افتحوا اللينك واضغطوا Sign in.";
+          + "2. Tap Sign in.\n3. Add it to your home screen: iPhone → Share → Add to Home Screen. Android → ⋮ → Install app. On iPhone, sign in once more from the home screen icon.\n\n"
+          + "1-minute video: " + APP_LINK + "/assets/walkthrough.mp4";
         const ph = String(p.phone || "").replace(/\D/g, "");
         window.open(ph ? "https://api.whatsapp.com/send/?phone=" + ph + "&text=" + encodeURIComponent(msg) + "&type=phone_number&app_absent=0"
                        : "https://api.whatsapp.com/send?text=" + encodeURIComponent(msg), "_blank");
@@ -3474,6 +3485,15 @@ class Component extends DCLogic {
       pinOpen: st.pinOpen,
       togglePin: () => S({ pinOpen: !st.pinOpen }),
       pinToggle: st.pinOpen ? "Hide" : "Change",
+      ...(() => {
+        // Google Calendar sync: the Google script stamps the time on every run.
+        const t = st.calLast ? new Date(st.calLast).getTime() : 0, m = t ? Math.round((Date.now() - t) / 60000) : -1;
+        const ok = t && m <= 15;
+        return {
+          calDot: ok ? "#2E7D4F" : (t ? "#B5651D" : "#9AA39D"),
+          calNote: !t ? "Not connected yet" : (m < 1 ? "Up to date · just now" : m < 60 ? "Up to date · " + m + " min ago" : "Last update " + new Date(t).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" }) + " · check the Google script")
+        };
+      })(),
       pinNew: st.pinNew,
       onPinNew: e => { const v = String(e.target.value).replace(/\D/g, "").slice(0, 4); this.setState({ pinNew: v }); },
       savePin: () => {
