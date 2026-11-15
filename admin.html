@@ -199,10 +199,14 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
           <div data-marking="1" style="display:flex;flex-direction:column;gap:14px">
             <sc-for list="{{ blocks }}" as="bl" hint-placeholder-count="3">
               <div style="display:flex;flex-direction:column;gap:8px">
-                <div style="display:flex;justify-content:space-between;align-items:center">
+                <div onClick="{{ bl.toggle }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer">
                   <span style="font-family:Marcellus,serif;font-size:17px;color:#14372B">{{ bl.time }}</span>
-                  <span style="font-size:11px;color:#5E6B63">{{ bl.meta }}</span>
+                  <span style="font-size:11px;color:#5E6B63">{{ bl.meta }} · <span style="color:#8A6A22;font-weight:600">{{ bl.arrow }}</span></span>
                 </div>
+                <sc-if value="{{ bl.collapsed }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ bl.toggle }}" style="background:rgba(20,55,43,.04);border-radius:14px;padding:11px 14px;font-size:12px;color:#3E4C44;cursor:pointer">{{ bl.summary }}</div>
+                </sc-if>
+                <sc-if value="{{ bl.open }}" hint-placeholder-val="{{ true }}">
                 <sc-for list="{{ bl.rows }}" as="rw" hint-placeholder-count="2">
                   <div style="background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:16px;padding:13px 15px;display:flex;flex-direction:column;gap:11px">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
@@ -230,7 +234,7 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
                     </sc-if>
                     <sc-if value="{{ rw.futureOnly }}" hint-placeholder-val="{{ false }}">
                       <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
-                        <span style="font-size:12px;color:#8C998F;line-height:1.45">Ticking off opens on the day</span>
+                        <span style="font-size:12px;color:#8C998F;line-height:1.45">{{ rw.futureNote }}</span>
                         <select value="{{ rw.trainer }}" onChange="{{ rw.onTrainer }}" style="flex:none;border:1px solid rgba(20,55,43,.18);background:#FAF7F0;border-radius:999px;padding:11px 12px;font-size:12px;color:#14372B;max-width:132px">
                           <sc-for list="{{ trainerOptions }}" as="t" hint-placeholder-count="3">
                             <option value="{{ t }}">{{ t }}</option>
@@ -239,13 +243,17 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
                       </div>
                     </sc-if>
                     <sc-if value="{{ rw.canCancel }}" hint-placeholder-val="{{ false }}">
-                      <span onClick="{{ rw.cancel }}" style="align-self:flex-start;font-size:12px;color:#9B3A22;cursor:pointer;text-decoration:underline">Cancel this booking</span>
+                      <button onClick="{{ rw.cancel }}" style="background:transparent;border:1px solid rgba(155,58,34,.3);color:#9B3A22;font-size:13px;font-weight:500;padding:10px;border-radius:999px;cursor:pointer" style-hover="background:rgba(155,58,34,.06)">Cancel this booking</button>
+                    </sc-if>
+                    <sc-if value="{{ rw.canUnmark }}" hint-placeholder-val="{{ false }}">
+                      <span onClick="{{ rw.unmark }}" style="align-self:flex-start;font-size:12px;color:#8A6A22;font-weight:600;cursor:pointer;text-decoration:underline">Marked by mistake? Put back to booked</span>
                     </sc-if>
                     <sc-if value="{{ rw.isMissed }}" hint-placeholder-val="{{ false }}">
                       <button onClick="{{ rw.giveBack }}" style="border:1px solid rgba(20,55,43,.2);background:transparent;color:#14372B;font-size:13px;font-weight:500;padding:11px;border-radius:999px;cursor:pointer" style-hover="background:rgba(20,55,43,.05)">Give the session back</button>
                     </sc-if>
                   </div>
                 </sc-for>
+                </sc-if>
                 <sc-if value="{{ bl.hasGap }}" hint-placeholder-val="{{ false }}">
                   <div style="padding-top:2px;display:flex;flex-direction:column;gap:8px">
                     <div onClick="{{ bl.toggleGap }}" style="display:flex;align-items:center;gap:10px;background:rgba(201,162,74,.1);border:1px solid rgba(201,162,74,.38);border-radius:14px;padding:10px 13px;cursor:pointer" style-hover="border-color:rgba(201,162,74,.7)">
@@ -280,7 +288,10 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
 
           <div style="display:flex;flex-direction:column;gap:9px;padding-top:4px">
             <sc-if value="{{ hasUnmarked }}" hint-placeholder-val="{{ true }}">
-              <button onClick="{{ markAllCame }}" style="border:none;background:#C9A24A;color:#14372B;font-size:15px;font-weight:600;padding:15px;border-radius:999px;cursor:pointer" style-hover="background:#B98F35">Everyone else came ({{ unmarkedCount }})</button>
+              <button onClick="{{ markAllCame }}" style="border:none;background:#C9A24A;color:#14372B;font-size:15px;font-weight:600;padding:15px;border-radius:999px;cursor:pointer" style-hover="background:#B98F35">Everyone who has started came ({{ unmarkedCount }})</button>
+              <sc-if value="{{ hasNotStarted }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:12px;color:#8A6A22;text-align:center;line-height:1.5">{{ notStartedNote }}</span>
+              </sc-if>
               <span style="font-size:12px;color:#5E6B63;text-align:center;line-height:1.5">Only mark who did not come. Tap the button above to close the day for everyone else.</span>
             </sc-if>
             <a href="{{ waLink }}" onClick="{{ markListSent }}" target="_blank" rel="noopener" style="text-decoration:none">
@@ -823,6 +834,41 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
           <div onClick="{{ g.pick }}" style="background:{{ g.bg }};color:{{ g.fg }};font-size:13px;font-weight:600;padding:8px 16px;border-radius:999px;cursor:pointer">{{ g.label }}</div>
         </sc-for>
       </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div onClick="{{ toggleTests }}" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+        <span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5E6B63;font-weight:600">Free test times</span>
+        <span style="font-size:12px;color:#8A6A22;font-weight:600">{{ testsToggle }}</span>
+      </div>
+      <sc-if value="{{ testsOpen }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:12px;color:#5E6B63;line-height:1.55">The days and hours a new rider can pick for the free test, by what they say they can do. Tests use the free horse at that time, so a time only shows when a Level 1 or Level 2 session is there.</span>
+        <sc-for list="{{ testRows }}" as="x" hint-placeholder-count="3">
+          <div style="background:#FFFFFF;border:1px solid rgba(20,55,43,.1);border-radius:18px;padding:15px;display:flex;flex-direction:column;gap:11px">
+            <span style="font-size:14px;font-weight:600;color:#14372B">{{ x.label }}</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ x.days }}" as="d" hint-placeholder-count="7">
+                <div onClick="{{ d.toggle }}" style="padding:7px 11px;border-radius:999px;font-size:12px;cursor:pointer;background:{{ d.bg }};color:{{ d.fg }};font-weight:{{ d.weight }}">{{ d.label }}</div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:9px">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                <label style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5E6B63;font-weight:600">From</label>
+                <select value="{{ x.start }}" onChange="{{ x.onStart }}" style="width:100%;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FAF7F0;border-radius:12px;padding:11px;font-size:13px;color:#14372B">
+                  <sc-for list="{{ x.hours }}" as="h" hint-placeholder-count="8"><option value="{{ h.v }}">{{ h.t }}</option></sc-for>
+                </select>
+              </div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                <label style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5E6B63;font-weight:600">Until</label>
+                <select value="{{ x.end }}" onChange="{{ x.onEnd }}" style="width:100%;min-width:0;border:1px solid rgba(20,55,43,.18);background:#FAF7F0;border-radius:12px;padding:11px;font-size:13px;color:#14372B">
+                  <sc-for list="{{ x.hours }}" as="h" hint-placeholder-count="8"><option value="{{ h.v }}">{{ h.t }}</option></sc-for>
+                </select>
+              </div>
+            </div>
+            <span style="font-size:11px;color:#8C998F">{{ x.summary }}</span>
+          </div>
+        </sc-for>
+      </sc-if>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:10px">
@@ -1451,10 +1497,19 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
         <span style="font-family:Marcellus,serif;font-size:21px;color:#14372B">{{ askTitle }}</span>
         <span style="font-size:13px;color:#5E6B63;line-height:1.55">{{ askBody }}</span>
       </div>
+      <sc-if value="{{ askHasCta2 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <button onClick="{{ askRun }}" style="border:none;background:#14372B;color:#FAF7F0;font-size:15px;font-weight:600;padding:15px;border-radius:999px;cursor:pointer">{{ askCta }}</button>
+          <button onClick="{{ askRun2 }}" style="background:transparent;border:1px solid rgba(155,58,34,.35);color:#9B3A22;font-size:15px;font-weight:600;padding:15px;border-radius:999px;cursor:pointer">{{ askCta2 }}</button>
+          <button onClick="{{ askCancel }}" style="background:transparent;border:none;color:#5E6B63;font-size:14px;padding:8px;cursor:pointer">Never mind</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ askNoCta2 }}" hint-placeholder-val="{{ true }}">
       <div style="display:flex;gap:9px">
         <button onClick="{{ askCancel }}" style="flex:1;background:transparent;border:1px solid rgba(20,55,43,.2);color:#14372B;font-size:15px;font-weight:500;padding:15px;border-radius:999px;cursor:pointer">Cancel</button>
         <button onClick="{{ askRun }}" style="flex:1.2;border:none;background:#14372B;color:#FAF7F0;font-size:15px;font-weight:600;padding:15px;border-radius:999px;cursor:pointer">{{ askCta }}</button>
       </div>
+      </sc-if>
     </div>
   </div>
 </sc-if>
@@ -1739,6 +1794,7 @@ function fromLive(d) {
     cashReqs: [], importRows: [],
     rules: { horizon: Number(se.booking_horizon_days) || 14, cancel: Number(se.cancel_window_hours) || 24, minAge: Number(se.min_age_years) || 7, validity: Number(se.card_validity_days) || 30 },
     instapay: String(se.instapay_address || ""), waCc: wa.indexOf("20") === 0 ? "EG" : "EG", waNumber: wa.indexOf("20") === 0 ? wa.slice(2) : wa,
+    testTimes: Array.isArray(se.test_times) && se.test_times.length ? se.test_times : TEST_TIMES,
     adminPin: d.pin || "7979", horses: Number(d.horses) || 4, calLast: String(se.calendar_last_sync || ""),
     trainers: d.trainers && d.trainers.length ? d.trainers : [], levelTrainer: lt,
     levels: Object.keys(lv).length ? lv : undefined,
@@ -1803,6 +1859,11 @@ function t12(h, m) {
   const ap = h >= 12 ? "PM" : "AM", hh = h % 12 === 0 ? 12 : h % 12;
   return hh + ":" + (m ? "30" : "00") + " " + ap;
 }
+const TEST_TIMES = [
+  { id:1, label:"Trotting and walking on your own", days:[0,2,5,6], start:17, end:21 },
+  { id:2, label:"Cantering on your own", days:[0,2,5,6], start:17, end:21 },
+  { id:3, label:"Jumping and competitions", days:[0,2,3,5,6], start:19.5, end:21 }
+];
 function tHalf(v) { return t12(Math.floor(v), v % 1 ? 30 : 0); }
 const HALF_HOURS = (() => { const out = []; for (let h = 14; h <= 22; h++) { out.push(h); if (h < 22) out.push(h + 0.5); } return out; })();
 const INSTAGRAM = "https://www.instagram.com/equicare_geziraclub/?hl=en";
@@ -1877,10 +1938,10 @@ const GUIDE = [
     { q:"Today's list: what each card means", a:"Today's list only shows on today's date. Tap any card and it takes you to the right place.\n\n• Check 2 payments: a rider says they paid. Opens Money.\n• Send today's list to the trainers: opens WhatsApp with the list ready.\n• Wish … a happy birthday: opens WhatsApp with a short message to the parent.\n• … asked for more days: a rider asked for extra days on the card. Opens their page. It clears itself once you change the card's end date.\n• 2 riders to link: new app accounts that say they already ride here. Opens Riders.\n• Mark who came: sessions from earlier today still not ticked. Takes you to them.\n\nWhen the list is empty you see \"Nothing left for today\".", img:"assets/help/admin-today.jpg" },
     { q:"\"More when you have time\"", a:"Tap Show under Today's list for the slower jobs:\n• Ready for a test: Level 1 riders with 25 lessons, Level 2 riders with 24. The trainer decides.\n• Nearly out of sessions: 2 sessions or fewer on the card.\n• Payments not confirmed: ones you left as Not yet.\n• Have not booked in 21 days: a message might bring them back.\n• Last month's record is ready: shows on the 1st to 7th of the month.\n• Profiles unfinished: date of birth or phone missing.\n\nTap Not now on any of them to hide it for a week." },
     { q:"Reading a time block", a:"Each time of the day has its own block:\n• The time, and \"2 of 4 horses\": riders booked against horses working.\n• Each rider with their level, and a tag: Booked (gold), Came (green), Missed (red), Cancelled (grey).\n• A free test shows \"Before the test\": what the rider says they can do and where they rode. Read it to the trainer before they start.\n• \"covering for …\" means another trainer is taking that session." },
-    { q:"Marking who came (the quick way)", a:"Only mark the riders who did NOT come:\n1. Tap Did not come on their row. The tag turns red: Missed. The session stays used.\n2. When the evening is over, tap the gold button Everyone else came (5). All the rest turn green.\n\nTicking only opens on the day itself. On a future day you see \"Ticking off opens on the day\".\n\nMarked someone by mistake? Tap Undo in the bar at the top, straight away.", img:"assets/help/admin-marking.jpg" },
+    { q:"Marking who came (the quick way)", a:"Only mark the riders who did NOT come:\n1. Tap Did not come on their row. The tag turns red: Missed. The session stays used.\n2. When the sessions are over, tap the gold button Everyone who has started came (5). Only sessions whose time has started turn green; later ones stay Booked.\n\nTicking opens when a session starts. Before that you see \"Ticking off opens when the session starts\".\n\nMarked someone by mistake? Tap Undo in the bar at the top straight away, or any time later tap Marked by mistake? Put back to booked on their row.\n\nA time block where everyone is marked folds into one line. Tap its time to open it again.", img:"assets/help/admin-marking.jpg" },
     { q:"Giving a missed session back", a:"For a rider marked Missed who had a good reason (for example they called, or the club was late):\n• Tap Give the session back on their row.\n\nThe booking becomes Cancelled and one session goes back on the card (never above the card's total). Undo works here too." },
     { q:"Changing the trainer for one session or the whole day", a:"• On a rider's row, pick another trainer from the small list on the right.\n• If that trainer had more sessions today, the app asks: Move all … to the new trainer, or Just this session.\n\nUse it when a trainer is off for the day. The rider's usual trainer stays the same." },
-    { q:"Cancelling one booking from Today", a:"• Tap Cancel this booking under the rider (only on Booked rows).\n• Confirm with Cancel the session.\n\nThe session always goes back to the rider, on the card, or off what they owe. The 24-hour rule is for riders cancelling in their app, not for staff." },
+    { q:"Cancelling one booking from Today", a:"• Tap Cancel this booking under the rider (only on Booked rows, at any time of the day, even after the session has started).\n• More than 24 hours ahead: the session goes back to the rider, on the card, or off what they owe.\n• Less than 24 hours away: you choose Cancel · give the session back, or Cancel · count the session.\n\nAlready ticked Came or Missed by mistake? Tap Put back to booked on the row first, then cancel." },
     { q:"Sending today's list to the trainers", a:"1. Tap Send today's list to the trainers (in Today's list, or the outlined button under the sessions).\n2. WhatsApp opens with the list already written.\n3. Pick the trainers' group or chat, then Send.\n\nThe list is grouped Level 1 and Level 2/3, with the time, the name and the age, and \"(test)\" for free tests. Cancelled bookings are left out.\n\nIf something changes later, the button reads Send the list again." },
     { q:"Blocking a time", a:"Use it when a time cannot be booked: horse care, a club event, a trainer late.\n1. Today → go to the day → Block a time.\n2. Tap Block next to each time. Tap Open it to free it again.\n3. Tap Done.\n\nTimes that already have a rider booked cannot be blocked: move or cancel the rider first. Blocked times are listed under the sessions of that day." },
     { q:"An empty gap on a future day", a:"On a coming day with 1½ hours or more empty between sessions, a gold note appears.\n• Level 1 (one rider): it suggests moving the later rider up. Ask on WhatsApp sends them a ready message; Move it moves the booking once they agree.\n• Levels 2 and 3 ride as a group, so the note only tells you about the gap.\n• Leave it as it is hides the note." },
@@ -1956,7 +2017,7 @@ class Component extends DCLogic {
       horses: 4,
       rules: { horizon:14, cancel:24, minAge:7, validity:30 },
       instapay: "", waCc: "EG", waNumber: "1066407979",
-      removeTrainer: null, reassignTo: "", ask: null, lastAdd: null,
+      removeTrainer: null, reassignTo: "", ask: null, lastAdd: null, blockOpen: {},
       // Accounts made in the rider app by people who said "I already ride at
       // Equicare". They wait here until the admin ties them to the right record.
       linkReqs: [
@@ -1964,6 +2025,7 @@ class Component extends DCLogic {
         { id:"lk2", name:"Amr Sader", member:"40211/1", dob:"2010-07-14", level:3, phone:"01223344556", asked:"Yesterday, 8:15 PM" }
       ],
       promos: [], promoUses: [], promoOpen: false, promoNew: null, promoErr: "", promoShow: null,
+      testTimes: TEST_TIMES, testOpen: false,
       rulesOpen: false, academyOpen: false, shareL23: true, trainersOpen: false, paperOpen: false,
       contactsOpen: false, coachAsk: null, gapExpand: false,
       listSent: {}, taskSnooze: {}, laterOpen: false, wished: {},
@@ -2041,7 +2103,7 @@ class Component extends DCLogic {
     return JSON.parse(JSON.stringify({
       riders: st.riders, bookings: st.bookings.map(b => Object.assign({}, b, { at: new Date(b.at).getTime() })),
       payments: st.payments, sales: st.sales, daysOff: st.daysOff, blocked: st.blocked, rules: st.rules,
-      adminPin: st.adminPin, instapay: st.instapay, wa: st.waCc + "|" + st.waNumber, horses: st.horses,
+      adminPin: st.adminPin, instapay: st.instapay, testTimes: JSON.stringify(st.testTimes || TEST_TIMES), wa: st.waCc + "|" + st.waNumber, horses: st.horses,
       trainers: st.trainers, levelTrainer: st.levelTrainer, levels: st.levels, shareL23: st.shareL23, feedbackN: st.feedback.length
     }));
   }
@@ -2098,6 +2160,7 @@ class Component extends DCLogic {
     Object.keys(SETTING_KEYS).forEach(k => { if (a.rules[k] !== b.rules[k] && b.rules[k] > 0) ops.push({ t:"setting", key: SETTING_KEYS[k], value: b.rules[k] }); });
     if (a.adminPin !== b.adminPin && /^\d{4}$/.test(b.adminPin)) ops.push({ t:"setting", key:"admin_pin", value: b.adminPin });
     if (a.instapay !== b.instapay) ops.push({ t:"setting", key:"instapay_address", value: b.instapay.trim() });
+    if (a.testTimes !== b.testTimes) ops.push({ t:"setting", key:"test_times", value: JSON.parse(b.testTimes) });
     if (a.wa !== b.wa) { const [cc, num] = b.wa.split("|"); if (cc !== "EG" || egPhoneOk(num)) {
       const dial = { EG:"20", SA:"966", AE:"971", GB:"44", US:"1" }[cc] || "20";
       ops.push({ t:"setting", key:"admin_whatsapp", value: dial + String(num).replace(/\D/g, "").replace(/^0+/, "") }); } }
@@ -2493,11 +2556,22 @@ class Component extends DCLogic {
   }
   askCancelBooking(b, r) {
     const when = DAYS[b.at.getDay()] + " " + b.at.getDate() + " " + MONS[b.at.getMonth()] + ", " + t12(b.at.getHours(), b.at.getMinutes());
+    const hrs = (b.at.getTime() - Date.now()) / 3600000;
+    const monthly = !!(r && r.monthly);
+    const first = r ? r.name.split(" ")[0] : "this rider";
+    const go = refund => () => dbReady()
+      .then(db => db.rpc("admin_cancel", { p_booking: b.id, p_refund: refund }))
+      .then(() => { this.flash(refund ? "Cancelled · session given back" : "Cancelled · session counted"); return this.loadLive(); })
+      .catch(e => this.flash(e.message));
     this.setState({ ask: {
-      title: "Cancel " + (r ? r.name.split(" ")[0] : "this rider") + "'s session?",
-      body: when + ". The session goes back to them" + (r && r.monthly ? "." : " (on the card, or off what they owe)."),
-      cta: "Cancel the session",
-      run: () => dbReady().then(db => db.rpc("admin_cancel", { p_booking: b.id })).then(() => { this.flash("Cancelled · session given back"); return this.loadLive(); }).catch(e => this.flash(e.message))
+      title: "Cancel " + first + "'s session?",
+      body: when + ". " + (monthly ? "Monthly rider — no session is used either way."
+        : hrs >= 24 ? "More than 24 hours ahead, so the session normally goes back to the rider (on the card, or off what they owe)."
+        : "Less than 24 hours away. You decide: give the session back (a good reason, or the club's own change), or count it as a late cancel."),
+      cta: monthly ? "Cancel the session" : "Cancel · give the session back",
+      run: go(true),
+      cta2: monthly || hrs >= 24 ? "" : "Cancel · count the session",
+      run2: go(false)
     } });
   }
   confirmLevel(p, n) {
@@ -2518,7 +2592,10 @@ class Component extends DCLogic {
     const day = new Date(st.day);
     const isOff = !!st.daysOff[dkey(day)];
     const todays = st.bookings.filter(b => dkey(b.at) === dkey(day)).sort((a,b) => a.at - b.at);
-    const unmarked = todays.filter(b => b.status === "booked");
+    // Nobody can have come to a session that has not started yet.
+    const started = b => b.at.getTime() <= NOW.getTime();
+    const unmarked = todays.filter(b => b.status === "booked" && started(b));
+    const notStarted = todays.filter(b => b.status === "booked" && !started(b));
 
     const byTime = {};
     todays.forEach(b => { const k = b.at.getHours() + ":" + b.at.getMinutes(); (byTime[k] = byTime[k] || []).push(b); });
@@ -2558,8 +2635,23 @@ class Component extends DCLogic {
 
     const blocks = Object.keys(byTime).map(k => {
       const rows = byTime[k], first = rows[0].at;
+      // A block where nobody is left to tick folds away to one line; tapping its
+      // heading opens or closes it. Blocks with open jobs stay open.
+      const bkey = dkey(day) + "|" + k;
+      const settled = rows.every(x => x.status !== "booked");
+      const isOpen = st.blockOpen[bkey] !== undefined ? st.blockOpen[bkey] : !settled;
+      const cnt = f => rows.filter(f).length;
+      const parts = [];
+      if (cnt(x => x.status === "attended")) parts.push(cnt(x => x.status === "attended") + " came");
+      if (cnt(x => x.status === "no_show")) parts.push(cnt(x => x.status === "no_show") + " missed");
+      if (cnt(x => x.status === "cancelled")) parts.push(cnt(x => x.status === "cancelled") + " cancelled");
+      if (cnt(x => x.status === "booked")) parts.push(cnt(x => x.status === "booked") + " booked");
       return {
         at: first.getTime(),
+        open: isOpen, collapsed: !isOpen,
+        arrow: isOpen ? "Hide" : "Show",
+        summary: parts.join(" · "),
+        toggle: () => this.setState(s2 => ({ blockOpen: Object.assign({}, s2.blockOpen, { [bkey]: !isOpen }) })),
         time: t12(first.getHours(), first.getMinutes()),
         meta: rows.length + " of " + st.horses + " horses",
         rows: rows.map(b => {
@@ -2574,10 +2666,21 @@ class Component extends DCLogic {
             chip: c[2], chipBg: c[0], chipFg: c[1],
             // Nobody can have come to a session that has not happened yet, so
             // the day itself decides whether ticking off is even offered.
-            needsMark: b.status === "booked" && !dayIsFuture,
-            futureOnly: b.status === "booked" && dayIsFuture,
+            needsMark: b.status === "booked" && started(b),
+            futureOnly: b.status === "booked" && !started(b),
+            futureNote: dayIsFuture ? "Ticking off opens on the day" : "Ticking off opens when the session starts",
             canCancel: LIVE && b.status === "booked",
             cancel: () => this.askCancelBooking(b, r),
+            canUnmark: b.status === "attended" || b.status === "no_show",
+            unmark: () => {
+              const before = b.status;
+              this.setState(s => ({ bookings: s.bookings.map(x => x.id === b.id ? Object.assign({}, x, { status:"booked" }) : x) }));
+              this.remember((r ? r.name : "Rider") + " put back to booked.", () => {
+                this.setState(s => ({ bookings: s.bookings.map(x => x.id === b.id ? Object.assign({}, x, { status: before }) : x), undo:null }));
+                this.flash("Marked again");
+              });
+              this.flash((r ? r.name.split(" ")[0] : "Rider") + " is back to booked");
+            },
             hasBrief: !!b.test,
             brief: b.test
               ? ("Has ridden before · " + (b.ability || "level not stated")
@@ -2954,14 +3057,16 @@ class Component extends DCLogic {
       noSessionsNote: st.levels[1].days.indexOf(day.getDay()) === -1 && st.levels[2].days.indexOf(day.getDay()) === -1
         ? "Equicare is closed on " + DAYS_FULL[day.getDay()] + "s." : "No bookings for this day yet.",
       blocks,
-      hasUnmarked: autoMark && unmarked.length > 0 && !dayIsFuture, unmarkedCount: unmarked.length,
+      hasUnmarked: autoMark && unmarked.length > 0, unmarkedCount: unmarked.length,
+      hasNotStarted: notStarted.length > 0 && !dayIsFuture,
+      notStartedNote: notStarted.length + (notStarted.length === 1 ? " session has" : " sessions have") + " not started yet — they stay Booked until their time.",
       listLabel: st.listSent[dkey(day)] ? "Send the list again" : "Send today's list to the trainers",
       markListSent: () => { const k = dkey(day); this.setState(s => ({ listSent: Object.assign({}, s.listSent, { [k]: true }) })); },
       lapseLabel: lapseAt,
       markAllCame: () => {
         const n = unmarked.length;
         const ids = unmarked.map(b => b.id);
-        this.setState(s => ({ bookings: s.bookings.map(b => dkey(b.at) === dkey(day) && b.status === "booked" ? Object.assign({}, b, { status:"attended" }) : b) }));
+        this.setState(s => ({ bookings: s.bookings.map(b => ids.indexOf(b.id) !== -1 && b.status === "booked" ? Object.assign({}, b, { status:"attended" }) : b) }));
         this.remember(n + " marked as came.", () => {
           this.setState(s => ({ bookings: s.bookings.map(b => ids.indexOf(b.id) !== -1 ? Object.assign({}, b, { status:"booked" }) : b), undo:null }));
           this.flash("Put back to booked");
@@ -3150,6 +3255,10 @@ class Component extends DCLogic {
       askTitle: st.ask ? st.ask.title : "",
       askBody: st.ask ? st.ask.body : "",
       askCta: st.ask ? st.ask.cta : "",
+      askHasCta2: !!(st.ask && st.ask.cta2),
+      askNoCta2: !(st.ask && st.ask.cta2),
+      askCta2: st.ask && st.ask.cta2 ? st.ask.cta2 : "",
+      askRun2: () => { const a = st.ask; S({ ask:null }); if (a && a.run2) a.run2(); },
       askCancel: () => S({ ask:null }),
       askRun: () => { const a = st.ask; S({ ask:null }); if (a && a.run) a.run(); },
 
@@ -3932,6 +4041,23 @@ class Component extends DCLogic {
       paperToggle: st.paperOpen ? "Hide" : "Show",
       toggleRules: () => S({ rulesOpen: !st.rulesOpen }),
       rulesToggle: st.rulesOpen ? "Hide" : "Show",
+      testsOpen: !!st.testOpen, testsToggle: st.testOpen ? "Hide" : "Show",
+      toggleTests: () => S({ testOpen: !st.testOpen }),
+      testRows: (st.testTimes || TEST_TIMES).map((o, i) => {
+        const write = patch => this.setState(s => ({ testTimes: (s.testTimes || TEST_TIMES).map((x, j) => j === i ? Object.assign({}, x, patch) : x) }));
+        const days = o.days || [];
+        return {
+          label: o.label,
+          days: DAYS.map((d, k) => ({ label: d, bg: days.indexOf(k) !== -1 ? "#14372B" : "rgba(20,55,43,.06)", fg: days.indexOf(k) !== -1 ? "#FAF7F0" : "#8C998F",
+            weight: days.indexOf(k) !== -1 ? "600" : "400",
+            toggle: () => write({ days: days.indexOf(k) !== -1 ? days.filter(x => x !== k) : days.concat([k]).sort() }) })),
+          hours: HALF_HOURS.map(h => ({ v: h, t: tHalf(h) })),
+          start: o.start, end: o.end,
+          onStart: e => { const v = Number(e.target.value); write({ start: v, end: Math.max(o.end, v + 0.5) }); },
+          onEnd: e => { const v = Number(e.target.value); if (v > o.start) write({ end: v }); else this.flash("Until must be after From"); },
+          summary: days.length ? days.slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(k => DAYS[k]).join(", ") + " · " + tHalf(o.start) + " – " + tHalf(o.end) : "No days: nobody can book this test"
+        };
+      }),
       academyOpen: st.academyOpen,
       toggleAcademy: () => S({ academyOpen: !st.academyOpen }),
       academyToggle: st.academyOpen ? "Hide" : "Show",
