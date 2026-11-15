@@ -1,6 +1,6 @@
 // Equicare — sends the lesson reminders.
 // The database wakes this every 5 minutes when reminders are waiting
-// (see push-1.sql). It needs no settings: the secret push key arrives from the
+// (see push-1.sql and push-3.sql). It needs no settings: the secret push key arrives from the
 // database with each call, and the notification keys are kept in the database.
 const webpush = require("web-push");
 
@@ -23,16 +23,25 @@ async function rpc(name, args) {
 
 function message(m, now) {
   if (m.kind === "test") {
-    return { title: "Equicare reminders are on", body: "You will get a reminder before each lesson.", tag: "equicare-test", url: "./index.html" };
+    return { title: "Equicare reminders are on", body: "You will get a reminder the evening before and 1 hour before each lesson.", tag: "equicare-test", url: "./index.html" };
   }
   const at = new Date(m.at);
   const time = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: TZ }).format(at);
+  const first = String(m.rider || "").trim().split(/\s+/)[0] || "Your";
+  const withTrainer = (m.trainer ? " with " + m.trainer : "");
+  if (m.kind === "night") {
+    return {
+      title: "Tomorrow: " + first + "'s lesson at " + time,
+      body: "Level " + m.level + withTrainer + ". See you at the arena.",
+      tag: "lesson-night-" + m.booking,
+      url: "./index.html"
+    };
+  }
   const mins = Math.max(1, Math.round((at - now) / 60000));
   const when = mins >= 55 ? "in 1 hour" : "in " + mins + " minutes";
-  const first = String(m.rider || "").trim().split(/\s+/)[0] || "Your";
   return {
     title: first + "'s lesson at " + time,
-    body: "Starts " + when + " · Level " + m.level + (m.trainer ? " with " + m.trainer : "") + ". See you at the arena.",
+    body: "Starts " + when + " · Level " + m.level + withTrainer + ". See you at the arena.",
     tag: "lesson-" + m.booking,
     url: "./index.html"
   };
