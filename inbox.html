@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Equicare · Messages</title>
+<link rel="icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --g:#14372B; --gold:#C9A24A; --cream:#FAF7F0; --sand:#EFE6D2; --ink:#1E2A24; --muted:#5E6B63; --red:#A4452F; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--cream); color:var(--ink); font:15px/1.45 Figtree, system-ui, sans-serif; }
+  header { background:var(--g); color:var(--cream); padding:18px 18px 22px; }
+  h1 { font:400 26px Marcellus, serif; margin:0; }
+  header p { margin:4px 0 0; color:rgba(250,247,240,.7); font-size:13px; }
+  main { max-width:720px; margin:0 auto; padding:14px; }
+  .card { background:#fff; border:1px solid rgba(20,55,43,.12); border-radius:16px; padding:14px; margin-bottom:12px; }
+  .needs { border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,74,.25); }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .grow { flex:1; }
+  .name { font-weight:600; }
+  .tag { font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:99px; background:rgba(20,55,43,.07); color:var(--muted); }
+  .tag.gold { background:rgba(201,162,74,.18); color:#7A5E1C; }
+  .tag.red { background:rgba(164,69,47,.12); color:var(--red); }
+  .tag.green { background:rgba(46,125,91,.12); color:#2E7D5B; }
+  .note { background:var(--sand); border-radius:10px; padding:8px 10px; margin:10px 0 0; font-size:14px; }
+  .msgs { margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+  .m { max-width:85%; padding:7px 10px; border-radius:12px; font-size:14px; white-space:pre-wrap; word-wrap:break-word; }
+  .m.in { background:var(--sand); align-self:flex-start; }
+  .m.out { background:var(--g); color:var(--cream); align-self:flex-end; }
+  .m.staff { background:var(--gold); color:var(--g); align-self:flex-end; }
+  .m small { display:block; opacity:.65; font-size:11px; margin-top:2px; }
+  button { font:600 13px Figtree, sans-serif; border:0; border-radius:99px; padding:9px 14px; cursor:pointer; background:var(--g); color:var(--cream); }
+  button.ghost { background:transparent; color:var(--g); border:1px solid rgba(20,55,43,.25); }
+  .acts { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  input, textarea { font:15px Figtree, sans-serif; width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(20,55,43,.25); background:#fff; }
+  textarea { min-height:90px; }
+  .muted { color:var(--muted); font-size:13px; }
+  .switch { display:flex; align-items:center; gap:10px; }
+  a { color:var(--g); }
+  #login { max-width:340px; margin:40px auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Messages</h1>
+  <p>Instagram &amp; Facebook assistant · chats that need you come first</p>
+</header>
+<main id="app"><div id="login" class="card">
+  <p class="name">Staff PIN</p>
+  <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="4 digits">
+  <div class="acts"><button onclick="signIn()">Open</button></div>
+  <p id="err" class="muted"></p>
+</div></main>
+
+<script>
+const SB = "https://dbrekbtgkhvhudqhuito.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRicmVrYnRna2h2aHVkcWh1aXRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1Mzc5OTgsImV4cCI6MjEwOTExMzk5OH0.wA70oorXBc70IQ12NzSKbNRwKn4DVfZ54jNAK5sllfY";
+let PIN = "", DATA = null, timer = null;
+try { PIN = sessionStorage.getItem("eq.inbox.pin") || ""; } catch (e) {}
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const when = t => t ? new Intl.DateTimeFormat("en-GB", { timeZone:"Africa/Cairo", day:"numeric", month:"short", hour:"numeric", minute:"2-digit" }).format(new Date(t)) : "";
+
+async function rpc(name, args) {
+  const r = await fetch(SB + "/rest/v1/rpc/" + name, { method:"POST",
+    headers:{ apikey:ANON, Authorization:"Bearer " + ANON, "Content-Type":"application/json" }, body:JSON.stringify(args) });
+  const j = await r.json().catch(() => ({ error: "No connection" }));
+  if (!r.ok) throw new Error((j && j.message) || "No connection");
+  if (j && j.error) throw new Error(j.error);
+  return j;
+}
+
+async function signIn() {
+  PIN = document.getElementById("pin").value.trim();
+  await load();
+}
+async function load() {
+  if (!PIN) return;
+  try {
+    DATA = await rpc("social_inbox", { p_pin: PIN });
+    try { sessionStorage.setItem("eq.inbox.pin", PIN); } catch (e) {}
+    draw();
+    clearTimeout(timer); timer = setTimeout(load, 60000);
+  } catch (e) {
+    try { sessionStorage.removeItem("eq.inbox.pin"); } catch (x) {}
+    const err = document.getElementById("err");
+    if (err) err.textContent = e.message; else alert(e.message);
+  }
+}
+async function act(action, thread, value) {
+  try { await rpc("social_set", { p_pin: PIN, p_action: action, p_thread: thread || null, p_value: value == null ? null : value }); await load(); }
+  catch (e) { alert(e.message); }
+}
+
+function draw() {
+  const d = DATA, ts = d.threads || [];
+  const waiting = ts.filter(t => t.needs).length;
+  let h = `<div class="card">
+    <div class="row"><div class="grow"><span class="name">Assistant</span>
+      <div class="muted">${d.bot_on ? "Answering new messages." : "Off: nobody gets an automatic reply."}
+      ${d.last_at ? " Last reply " + esc(when(d.last_at)) + "." : ""}</div></div>
+      <button class="${d.bot_on ? "ghost" : ""}" onclick="act('bot', null, '${d.bot_on ? "off" : "on"}')">${d.bot_on ? "Turn off" : "Turn on"}</button></div>
+    ${d.last_note ? `<p class="note">Last problem: ${esc(d.last_note)}</p>` : ""}
+    <p class="muted" style="margin:12px 0 6px">Notes the assistant reads (closures, holidays, news). Keep them short and dated.</p>
+    <textarea id="notes" placeholder="e.g. Closed Friday 28 Nov for a club event. Lessons resume Saturday 29 Nov.">${esc(d.notes)}</textarea>
+    <div class="acts"><button onclick="act('notes', null, document.getElementById('notes').value)">Save notes</button>
+      <a class="muted" style="align-self:center" href="https://business.facebook.com/latest/inbox" target="_blank" rel="noopener">Open Meta inbox to reply ↗</a></div>
+  </div>
+  <p class="muted">${waiting ? waiting + " chat" + (waiting > 1 ? "s need" : " needs") + " you." : "Nothing waiting for you."} When you reply yourself in Instagram or Meta Business Suite, the assistant stays quiet in that chat for ${esc(d.pause_hours)} hours.</p>`;
+
+  for (const t of ts) {
+    const tags = [
+      `<span class="tag">${t.platform === "instagram" ? "Instagram" : "Facebook"}</span>`,
+      t.member === "yes" ? `<span class="tag green">Member${t.member_no ? " " + esc(t.member_no) : ""}</span>`
+        : t.member === "no" ? `<span class="tag red">Not a member</span>` : `<span class="tag">Member?</span>`,
+      t.rider ? `<span class="tag green">In our records</span>` : "",
+      t.needs ? `<span class="tag gold">Needs you</span>` : t.paused ? `<span class="tag">Assistant quiet</span>` : ""
+    ].join(" ");
+    const msgs = (t.messages || []).map(m =>
+      `<div class="m ${m.dir}">${esc(m.text)}<small>${m.dir === "in" ? "" : m.dir === "staff" ? "Team · " : "Assistant · "}${esc(when(m.at))}</small></div>`).join("");
+    h += `<div class="card ${t.needs ? "needs" : ""}">
+      <div class="row"><span class="name grow">${esc(t.name || "Unknown name")}</span>${tags}</div>
+      ${t.needs && t.note ? `<p class="note">${esc(t.note)}</p>` : ""}
+      <div class="msgs">${msgs}</div>
+      <div class="acts">
+        ${t.needs || t.paused ? `<button onclick="act('done', ${t.id})">Done · assistant can answer again</button>` : `<button class="ghost" onclick="act('pause', ${t.id})">Keep assistant out of this chat</button>`}
+        ${t.member !== "yes" ? `<button class="ghost" onclick="act('member', ${t.id}, 'yes')">Is a member</button>` : ""}
+        ${t.member !== "no" ? `<button class="ghost" onclick="act('member', ${t.id}, 'no')">Not a member</button>` : ""}
+      </div></div>`;
+  }
+  document.getElementById("app").innerHTML = h;
+}
+document.getElementById("pin").addEventListener("keydown", e => { if (e.key === "Enter") signIn(); });
+if (PIN) load();
+</script>
+</body>
+</html>

@@ -1,9 +1,13 @@
 {
   "cleanUrls": false,
   "trailingSlash": false,
+  "functions": {
+    "api/meta.js": { "maxDuration": 30 }
+  },
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/staff", "destination": "/admin.html" }
+    { "source": "/staff", "destination": "/admin.html" },
+    { "source": "/inbox", "destination": "/inbox.html" }
   ],
   "headers": [
     {
@@ -14,7 +18,7 @@
       ]
     },
     {
-      "source": "/(index|admin).html",
+      "source": "/(index|admin|inbox).html",
       "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     }
   ]
